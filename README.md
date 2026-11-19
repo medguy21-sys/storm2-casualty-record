@@ -1,4 +1,4 @@
-[README.md](https://github.com/user-attachments/files/35098964/README.md)
+[README_1.md](https://github.com/user-attachments/files/35100030/README_1.md)
 # STORM-2 Unified Casualty Record
 
 A touch-first tablet form that combines the fields of three Ukrainian casualty documentation forms into one record that follows a casualty from point of injury through Role 2 surgery and anesthesia.
@@ -36,12 +36,25 @@ Records are saved **only in the browser on that device**. Nothing is sent anywhe
 - Clearing browser data deletes records.
 - Do not enter real patient information in this training prototype.
 
+## Voice capture
+
+Tap **Record** (top bar) and speak. Each phrase is saved to a transcript with the time speaking started, and common items are entered into the form automatically, for example:
+
+- "pulse 124, pressure 88 over 50", "пульс 120, тиск 90 на 60"
+- "tourniquet right leg on", "турнікет права нога накладено"
+- "TXA 1 gram IV", "FAST negative"
+
+Every automatic entry can be undone with one tap in the transcript panel. Choose Ukrainian or English in the panel.
+
+- Works in **Microsoft Edge or Google Chrome**, opened from a web address (for example GitHub Pages). Opened as a file from the tablet's folders, the browser may block the microphone.
+- Uses the browser's built-in speech recognition. **Audio is processed by Google (Chrome) or Microsoft (Edge)** and needs an internet connection. GRM and the Ukrainian side should approve this before any real patient use.
+- Recognition of Ukrainian medical terms has not been field-tested yet.
+
 ## Features only in the claude.ai version
 
 The hosted claude.ai version adds features that need the Claude platform. They do not work from this file or from GitHub Pages:
 
-- One-button voice capture (Ukrainian or English) that fills fields automatically with the time each phrase was spoken
-- "Fill remaining fields with Claude" from the transcript
+- "Fill remaining fields with Claude" for phrases the automatic parser could not enter
 - Shared course database for trauma registry review
 
 ## Updating
@@ -53,7 +66,7 @@ Replace `index.html` with the new version. Export records first (see above).
 - Abbreviations marked **[confirm]** come from a scanned 001/о and need checking against the paper form: Ц/В/П, triage colors, Б/С and М/С, ММРМ.
 - The vital signs chart symbols (∨ systolic, ∧ diastolic, ● pulse) need confirmation from anesthesia staff.
 - The E-FAST repeat interval defaults to 30 minutes as a placeholder for faculty to set.
-- Needs a connection to open when hosted on GitHub Pages (no offline install yet).
+- Needs a connection to open when hosted on GitHub Pages (no offline install yet). Voice capture always needs a connection.
 - Not yet tested on a physical Surface Pro.
 
 ## Contact
