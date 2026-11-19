@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>STORM-2 Unified Casualty Record</title>
+<style>
+:root{--navy:#1C2B3A;--blue:#2E5A8A;--bg:#F3F5F8;--card:#fff;--line:#D5DCE4;--mut:#5B6B7C;--on:#2E5A8A;--onbg:#E3ECF6;--red:#B3261E;--amber:#9A6700;--green:#1E6B3A}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;font-family:Arial,Helvetica,sans-serif;color:var(--navy);background:var(--bg);-webkit-tap-highlight-color:transparent}
+button{font-family:inherit}
+#app{display:grid;grid-template-rows:auto auto 1fr;height:100vh}
+header{background:var(--navy);color:#fff;padding:8px 14px;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+header .ttl{font-weight:700;font-size:15px;letter-spacing:.3px}
+header .ttl small{display:block;font-weight:400;opacity:.75;font-size:11px}
+.pt{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;flex:1;min-width:280px}
+.pt b{font-size:17px}
+.tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:700;background:#33475B}
+.tag.red{background:var(--red)}.tag.amb{background:#C98A00;color:#111}.tag.grn{background:var(--green)}.tag.blk{background:#000}
+.hbtns{display:flex;gap:6px;flex-wrap:wrap}
+.hb{background:#2E3F51;color:#fff;border:1px solid #4A5E73;border-radius:6px;padding:9px 12px;font-size:14px;min-height:42px;cursor:pointer}
+.hb.on{background:#fff;color:var(--navy)}
+.roleSel{display:flex;gap:4px;align-items:center;font-size:12px}
+.roleSel .hb{padding:9px 11px}
+main{display:grid;grid-template-columns:1fr;min-height:0}
+#app.vpo main{grid-template-columns:1fr 390px}
+nav{background:#E6EBF1;border-bottom:2px solid var(--blue);display:flex;flex-wrap:wrap;gap:4px;padding:6px 8px}
+nav button{display:flex;align-items:center;flex:1 1 auto;justify-content:space-between;border:1px solid #C3CFDB;background:#fff;padding:8px 11px;border-radius:6px;font-size:13px;color:var(--navy);min-height:44px;cursor:pointer;gap:6px;white-space:nowrap}
+nav button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+nav button .n{font-size:10px;background:var(--onbg);color:var(--blue);border-radius:10px;padding:2px 6px;font-weight:700}
+nav button.on .n{background:var(--blue);color:#fff}
+#content{overflow-y:auto;padding:6px 18px 50vh;scroll-behavior:auto;position:relative}
+.sec{padding-top:14px;border-top:3px solid var(--navy);margin-top:18px}
+.sec:first-child{border-top:0;margin-top:0}
+.sech{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.totop{position:fixed;right:18px;bottom:18px;z-index:12;border:0;background:var(--navy);color:#fff;border-radius:24px;padding:12px 16px;font-size:14px;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.25);cursor:pointer}
+#app.vpo .totop{right:408px}
+#vp{background:#fff;border-left:1px solid var(--line);overflow-y:auto;display:none}
+#app.vpo #vp{display:block}
+.vph{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:var(--navy);color:#fff;position:sticky;top:0;z-index:2}
+.vpc{padding:10px 12px;border-bottom:1px solid var(--line)}
+.vclock{font-size:30px;font-weight:700;letter-spacing:1px;font-variant-numeric:tabular-nums}
+.vrec{width:100%;margin-top:10px;border:0;border-radius:8px;background:var(--red);color:#fff;font-size:18px;font-weight:700;min-height:56px;cursor:pointer}
+.vrec.live{background:var(--navy);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(179,38,30,.6)}50%{box-shadow:0 0 0 8px rgba(179,38,30,0)}}
+.vlive{min-height:40px;margin:8px 0;padding:8px;background:#F6F8FB;border-radius:6px;font-style:italic;color:var(--mut)}
+.vph2{padding:8px 12px;border-bottom:1px solid var(--line)}
+.vt{font-variant-numeric:tabular-nums}
+.rl2{font-size:11px;background:var(--onbg);color:var(--blue);border-radius:4px;padding:1px 6px;margin-left:6px}
+.vtx{margin:3px 0 5px;font-size:14px}
+.vop{display:inline-flex;align-items:center;gap:4px;background:#E7F1EA;border:1px solid #9CC3A8;color:#1E4D2B;border-radius:5px;padding:3px 4px 3px 7px;font-size:12px;margin:0 4px 4px 0}
+.vop button{border:0;background:#fff;border-radius:4px;cursor:pointer;font-size:14px;min-width:30px;min-height:28px}
+.hb.rec{background:var(--red);border-color:var(--red);font-weight:700}
+.hb.rec.live{animation:pulse 1.4s infinite}
+.act:disabled{opacity:.45}
+button{touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.hb{min-height:44px}
+.mic{min-height:40px;padding:8px 12px;font-size:13px}
+.act.del{min-height:44px;min-width:44px}
+.vop button{min-width:40px;min-height:36px}
+.efdel{min-height:34px;min-width:40px}
+nav .sh{display:none}
+input.bad{border-color:var(--red);background:#FDECEA}
+.tqg{display:grid;gap:8px}
+.tqc{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#FBFCFD}
+.tqc.live{border-color:var(--red);background:#FFF6F5}
+.tqh{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.tqh b{min-width:100px}.tqh input{flex:1;max-width:340px;min-height:40px;padding:6px 8px;font-size:15px}
+.tqt4{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+#kp{position:fixed;left:0;right:0;bottom:0;z-index:40;display:none;background:#1C2B3A;padding:8px 10px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -4px 16px rgba(0,0,0,.3)}
+#kp.show{display:block}
+.kpb{max-width:620px;margin:0 auto}
+.kph{display:flex;justify-content:space-between;align-items:baseline;color:#fff;padding:2px 4px 8px;gap:10px}
+.kpl{font-size:13px;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kpv{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;min-width:90px;text-align:right}
+.kpr{display:flex;gap:6px;margin-bottom:6px}
+.kpr button{flex:1;min-height:44px;border:0;border-radius:6px;background:#2E5A8A;color:#fff;font-size:15px;font-weight:700}
+.kpg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.kpg button{min-height:54px;border:0;border-radius:6px;background:#fff;color:#1C2B3A;font-size:22px;font-weight:700}
+.kpg button.kpn{background:#C9D6E3;font-size:15px}
+.kpg button.kpd{background:#1E6B3A;color:#fff;font-size:17px}
+#app.kpo #content{padding-bottom:420px}
+@media (max-width:1100px){
+ header .ttl{display:none}
+ nav .lg{display:none}nav .sh{display:inline}
+ nav button{padding:8px 9px}
+ #app.vpo main{grid-template-columns:1fr;grid-template-rows:1fr 36vh}
+ #app.vpo #vp{border-left:0;border-top:3px solid var(--navy)}
+ #app.vpo .totop{right:18px;bottom:calc(36vh + 14px)}
+ .card table:not(.efs){display:block;overflow-x:auto;white-space:nowrap}
+ #content{padding-left:10px;padding-right:10px}
+}
+.agebtn{width:100%;min-height:44px;font-size:16px;text-align:left;padding:10px;border:1px solid #AFC0D2;border-radius:6px;background:#fff;color:var(--mut);cursor:pointer;display:flex;justify-content:space-between}
+.agebtn.set{color:var(--navy);font-weight:700}
+.fld{position:relative}
+.agelist{position:absolute;left:0;right:0;z-index:8;margin-top:4px;border:1px solid var(--blue);border-radius:6px;height:264px;overflow-y:auto;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.15);-webkit-overflow-scrolling:touch}
+.ageopt{display:block;width:100%;border:0;border-bottom:1px solid #EEF1F5;background:#fff;text-align:left;padding:0 14px;min-height:44px;font-size:17px;color:var(--navy);cursor:pointer}
+.ageopt.on{background:var(--blue);color:#fff;font-weight:700}
+.efw{overflow-x:auto;border:1px solid var(--line);border-radius:6px}
+.efs{width:auto;border-collapse:separate;border-spacing:0}
+.efs th,.efs td{min-width:168px;vertical-align:middle;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.efs .efz{position:sticky;left:0;z-index:1;min-width:150px;background:#fff;font-weight:700;font-size:13px}
+.efs th.efz{background:var(--navy);color:#fff}
+.efs tr:nth-child(even) td.efz{background:#F6F8FB}
+.efs th input{margin-top:4px;min-height:38px;font-size:14px;padding:5px}
+.efs td input{min-height:38px;font-size:14px;padding:5px}
+.efh{display:flex;align-items:center;gap:6px}
+.efdel{margin-left:auto;border:1px solid #fff;background:transparent;color:#fff;border-radius:4px;font-size:12px;padding:3px 7px;cursor:pointer}
+.efc{display:flex;gap:4px}.efc .chip{padding:6px 8px;min-width:44px;font-size:13px}
+.chip.efp.on{background:var(--red);border-color:var(--red)}
+.chip.efn.on{background:var(--green);border-color:var(--green)}
+.chip.efq.on{background:#C98A00;border-color:#C98A00;color:#111}
+.vchart{display:flex;border:1px solid var(--line);border-radius:6px;background:#fff;overflow:hidden}
+.vcl{flex:0 0 104px;background:#fff;border-right:1px solid var(--line)}
+.vcs{overflow-x:auto;flex:1}
+.vcs svg [data-tip]{cursor:pointer}
+.vleg{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;font-size:12px;margin-bottom:8px}
+.vleg span{display:inline-flex;align-items:center;gap:5px}
+h2{margin:2px 0 2px;font-size:21px}
+.srcl{color:var(--blue);font-size:12px;margin-bottom:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:12px}
+.card h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.5px;color:var(--blue)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px 16px}
+.fld{min-width:0}
+.fld.w2{grid-column:span 2}.fld.full{grid-column:1/-1}
+.lab{font-size:12px;color:var(--mut);margin-bottom:4px;display:flex;justify-content:space-between;gap:6px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid #AFC0D2;background:#fff;color:var(--navy);border-radius:6px;padding:9px 12px;font-size:14px;min-height:44px;min-width:44px;cursor:pointer;position:relative;line-height:1.15}
+.chip.on{background:var(--on);border-color:var(--on);color:#fff;font-weight:700}
+.chip .st{display:block;font-size:10px;font-weight:400;opacity:.9;margin-top:2px}
+input[type=text],input[type=number],input[type=date],input[type=time],textarea,select{width:100%;font:inherit;font-size:16px;padding:10px;border:1px solid #AFC0D2;border-radius:6px;background:#fff;color:var(--navy);min-height:44px}
+textarea{min-height:84px;resize:vertical}
+.tw{display:flex;gap:6px}.tw input{flex:1}
+.now{border:1px solid var(--blue);background:var(--onbg);color:var(--blue);border-radius:6px;padding:0 10px;font-size:13px;font-weight:700;min-height:44px;cursor:pointer;white-space:nowrap}
+.mic{border:1px solid var(--blue);background:#fff;color:var(--blue);border-radius:6px;padding:4px 8px;font-size:12px;cursor:pointer}
+.mic.live{background:var(--red);border-color:var(--red);color:#fff}
+.unit{font-size:12px;color:var(--mut)}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th{background:var(--navy);color:#fff;font-weight:700;text-align:left;padding:7px 8px;font-size:12px}
+td{padding:7px 8px;border-bottom:1px solid var(--line)}
+tr:nth-child(even) td{background:#F6F8FB}
+.tqt td,.tqt th{padding:5px}
+.tqt input{min-height:40px;padding:6px;font-size:15px}
+.act{border:0;background:var(--blue);color:#fff;border-radius:6px;padding:11px 16px;font-size:15px;font-weight:700;min-height:46px;cursor:pointer}
+.act.sec{background:#fff;color:var(--blue);border:1px solid var(--blue)}
+.act.del{background:#fff;color:var(--red);border:1px solid var(--red);padding:6px 10px;min-height:36px;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.qp{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.qp .chip{font-size:13px;padding:8px 10px}
+.vin{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-bottom:8px}
+.vin label{font-size:11px;color:var(--mut)}
+.body{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.body svg{background:#F6F8FB;border:1px solid var(--line);border-radius:8px;touch-action:manipulation;cursor:crosshair}
+.mk{font-size:11px;font-weight:700}
+.efast td{text-align:center}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:62px 46px 1fr;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14px}
+.tl .tm{font-weight:700}
+.tl .rl{font-size:11px;background:var(--onbg);color:var(--blue);border-radius:4px;text-align:center;padding:2px 0;height:fit-content}
+.gap{background:#FFF7E0;border:1px solid #E5C76B;border-radius:6px;padding:8px 10px;font-size:13px;margin-bottom:12px}
+canvas.sigc{border:1px dashed #8AA0B6;border-radius:6px;background:#fff;touch-action:none;width:100%;max-width:520px;height:150px}
+.modal{position:fixed;inset:0;background:rgba(15,25,35,.55);display:none;align-items:flex-start;justify-content:center;padding:40px 12px;z-index:20}
+.modal.show{display:flex}
+.mbox{background:#fff;border-radius:10px;max-width:720px;width:100%;max-height:85vh;overflow:auto;padding:16px}
+.plist button{display:flex;justify-content:space-between;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:6px;padding:12px;margin-bottom:6px;font-size:15px;cursor:pointer;min-height:52px;gap:10px}
+.plist button.cur{border-color:var(--blue);background:var(--onbg)}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:6px;font-size:14px;display:none;z-index:30}
+.foot{font-size:11px;color:var(--mut);margin-top:24px}
+.hide{display:none!important}
+.timers{display:flex;gap:6px;flex-wrap:wrap}
+.timers .tag{font-weight:400}
+@media (max-width:700px){.fld.w2{grid-column:auto}}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="ttl" id="hTitle"></div>
+  <div class="pt" id="ptBanner"></div>
+  <div class="roleSel" id="roleSel"></div>
+  <div class="hbtns">
+    <button class="hb rec" id="bVoice" data-voice="1"></button>
+    <button class="hb" id="bPanel" data-vptoggle="1"></button>
+    <button class="hb" id="bList"></button>
+    <button class="hb" id="bNew"></button>
+    <button class="hb" id="bLang">EN</button>
+    <button class="hb" id="bKp" title="Keypad">⌨</button>
+    <button class="hb" id="bFs" title="Full screen">⛶</button>
+  </div>
+</header>
+<nav id="nav"></nav>
+<main>
+  <div id="content"></div>
+  <aside id="vp"></aside>
+</main>
+<div id="kp"></div>
+<button class="totop" id="toTop">▲ <span id="toTopL"></span></button>
+</div>
+<div class="modal" id="mList"><div class="mbox" id="mListBox"></div></div>
+<div id="toast"></div>
+<script>
+(function(){
+"use strict";
+/* ---------- language ---------- */
+var L='ua';
+function T(en,ua){return L==='ua'?(ua||en):en;}
+function O(v,en,ua){return [v,en,ua];}
+var YN=[O('y','Yes','Так'),O('n','No','Ні')];
+var YNU=[O('y','Yes','Так'),O('n','No','Ні'),O('u','Unknown','Невідомо')];
+var LR=[O('R','Right','Справа'),O('L','Left','Зліва')];
+var LIMBS=[O('RUE','R arm','П рука'),O('LUE','L arm','Л рука'),O('RLE','R leg','П нога'),O('LLE','L leg','Л нога')];
+var ROLES=['1','2','3','4'];
+
+/* ---------- schema ----------
+ field: {k,t,en,ua,o:opts,u:unit,w:'w2'|'full',stamp:true}
+ t: chips | multi | text | num | date | time | area | w (widget)
+*/
+function DEP(n){return [
+  {k:'depDate'+n,t:'date',en:'Departure date',ua:'Дата вибуття'},{k:'depTime'+n,t:'time',en:'Departure time',ua:'Час вибуття'},
+  {k:'evTo'+n,t:'chips',en:'Evacuated to: role',ua:'Евакуйований до: рівень',o:[O('1','Role 1','Рівень 1'),O('2','Role 2','Рівень 2'),O('3','Role 3','Рівень 3'),O('4','Role 4','Рівень 4')],w:'w2'},
+  {k:'evFac'+n,t:'text',en:'Evacuated to: facility',ua:'Евакуйований до: заклад',w:'w2'},
+  {k:'depCat'+n,t:'chips',en:'Evacuation category',ua:'Евакуаційна категорія',o:[O('1','I'),O('2','II'),O('3','III')]},
+  {k:'depPos'+n,t:'chips',en:'Position',ua:'Положення',o:[O('si','Sitting','Сидячи'),O('ly','Lying','Лежачи')]},
+  {k:'escort'+n,t:'chips',en:'Escort',ua:'Супровід',o:YN},
+  {k:'trans'+n,t:'chips',en:'Transport',ua:'Транспорт',o:[O('casevac','CASEVAC'),O('mmrm','MMRM (ММРМ)','ММРМ'),O('medevac','MEDEVAC')],w:'w2'},
+  {k:'vehT'+n,t:'chips',en:'Vehicle type (Б/С, М/С) [confirm]',ua:'Тип (Б/С, М/С)',o:[O('bs','Б/С'),O('ms','М/С')]},
+  {k:'depAdd'+n,t:'multi',en:'Additional',ua:'Додатково',o:[O('A','A'),O('B','B'),O('cons','CONS'),O('o2','Oxygen','Кисень'),O('vent','Ventilator','ШВЛ'),O('oth','Other','Інше')],w:'full'}];}
+function PROV(n){return [
+  {k:'prov'+n,t:'text',en:'Provider full name',ua:'ПІБ медичного працівника',w:'w2'},
+  {k:'provUnit'+n,t:'text',en:'Medical unit',ua:'Медичний підрозділ'},
+  {k:'provRole'+n,t:'chips',en:'Role',ua:'Рівень',o:[O('1','1'),O('2','2'),O('3','3'),O('4','4')]},
+  {k:'provDate'+n,t:'date',en:'Date',ua:'Дата'},
+  {k:'sig'+n,t:'w',w:'full'}];}
+var S=[
+{id:'pt',en:'Patient',ua:'Пацієнт',src:'001/о [1]; 002/о (1); 003-3/о header',g:[
+ {en:'Identification',ua:'Ідентифікація',f:[
+  {k:'cardNo',t:'text',en:'Card No.',ua:'Картка №'},
+  {k:'name',t:'text',en:'Full name (last, first, patronymic)',ua:'ПІБ (прізвище, ім’я, по батькові)',w:'w2'},
+  {k:'rank',t:'text',en:'Rank',ua:'Військове звання'},
+  {k:'unit',t:'text',en:'Unit',ua:'Військова частина / підрозділ'},
+  {k:'pid',t:'text',en:'ID number',ua:'Ідентифікаційний номер'},
+  {k:'dob',t:'date',en:'Date of birth',ua:'Дата народження',noToday:1},
+  {k:'age',t:'age',en:'Approximate age',ua:'Орієнтовний вік',u:'yrs'},
+  {k:'sex',t:'chips',en:'Sex',ua:'Стать',o:[O('M','M','Ч'),O('F','F','Ж')]},
+  {k:'wt',t:'num',en:'Weight',ua:'Маса тіла',u:'kg'},
+  {k:'ht',t:'num',en:'Height',ua:'Зріст',u:'cm'},
+  {k:'ibw',t:'num',en:'Ideal body weight',ua:'Ідеальна маса тіла',u:'kg',ibw:1},
+  {k:'pcat',t:'chips',en:'Category (Ц/В/П) [confirm]',ua:'Категорія (Ц/В/П)',o:[O('V','Military (В)','Військовий (В)'),O('C','Civilian (Ц)','Цивільний (Ц)'),O('P','POW (П)','Полонений (П)')]},
+  {k:'inpatNo',t:'text',en:'Inpatient record No. (003-3/о)',ua:'Медична карта стаціонарного хворого №'}
+ ]},
+ {en:'Allergy and blood',ua:'Алергія та кров',f:[
+  {k:'allergy',t:'chips',en:'Allergy',ua:'Алергія',o:YNU},
+  {k:'allergyTxt',t:'text',en:'Allergy details',ua:'Деталі алергії',w:'w2'},
+  {k:'abo',t:'chips',en:'Blood group ABO',ua:'Група крові',o:[O('O','O (I)','0 (I)'),O('A','A (II)','A (II)'),O('B','B (III)','B (III)'),O('AB','AB (IV)','AB (IV)'),O('nd','Not determined','Не визначено')]},
+  {k:'rh',t:'chips',en:'Rh',ua:'Резус',o:[O('+','Rh +','Rh +'),O('-','Rh −','Rh −')]}
+ ]},
+ {en:'Event and triage',ua:'Подія та сортування',f:[
+  {k:'incDate',t:'date',en:'Event date',ua:'Дата події'},
+  {k:'incTime',t:'time',en:'Event time',ua:'Час події'},
+  {k:'triage',t:'chips',en:'Triage category [confirm]',ua:'Сортувальна категорія',o:[O('R','Red','Червона'),O('Y','Yellow','Жовта'),O('G','Green','Зелена'),O('B','Black','Чорна'),O('u','Unknown','Невідомо')],w:'w2'},
+  {k:'evacCat',t:'chips',en:'Evacuation category',ua:'Евакуаційна категорія',o:[O('1','Urgent (I)','Невідкладна (I)'),O('2','Priority (II)','Пріоритетна (II)'),O('3','Routine (III)','Планова (III)')],w:'w2'},
+  {k:'arrDate',t:'date',en:'Arrival at first medical unit: date',ua:'Прибуття до першого мед. підрозділу: дата'},
+  {k:'arrTime',t:'time',en:'Arrival at first medical unit: time',ua:'Прибуття до першого мед. підрозділу: час'},
+  {k:'arrMode',t:'chips',en:'Arrived by',ua:'Доставлений',o:[O('casevac','CASEVAC'),O('mmrm','MMRM (ММРМ)','ММРМ'),O('medevac','MEDEVAC')],w:'w2'},
+  {k:'arrFrom',t:'chips',en:'Arrived from MTF role',ua:'З МТФ рівня',o:[O('1','Role 1','Рівень 1'),O('2','Role 2','Рівень 2'),O('3','Role 3','Рівень 3'),O('4','Role 4','Рівень 4')],w:'w2'},
+  {k:'arr2Date',t:'date',en:'Arrival at Role 2: date (001/о [15])',ua:'Прибуття на Рівень 2: дата'},
+  {k:'arr2Time',t:'time',en:'Arrival at Role 2: time',ua:'Прибуття на Рівень 2: час'},
+  {k:'triage2',t:'chips',en:'Triage category at Role 2 [confirm]',ua:'Сортувальна категорія на Рівні 2',o:[O('R','Red','Червона'),O('Y','Yellow','Жовта'),O('G','Green','Зелена'),O('B','Black','Чорна'),O('u','Unknown','Невідомо')],w:'w2'},
+  {k:'facility',t:'text',en:'Medical unit / facility',ua:'Медичний підрозділ / заклад',w:'w2'}
+ ]}
+]},
+{id:'mech',en:'Mechanism & injuries',ua:'Механізм і травми',src:'001/о [2]; 002/о (2), (3)',g:[
+ {en:'Injury / illness / exposure',ua:'Травма / захворювання / вплив',f:[
+  {k:'mech',t:'multi',en:'Mechanism',ua:'Механізм',o:[O('gsw','Gunshot','Вогнепальне'),O('blast','Blast','Вибухове'),O('open','Open','Відкрите'),O('blunt','Blunt','Тупа травма'),O('crush','Crush / prolonged compression','Тривале стиснення'),O('thermal','Thermal','Термічне'),O('cold','Cold','Холодове')],w:'full'},
+  {k:'pen',t:'chips',en:'Type',ua:'Тип',o:[O('p','Penetrating','Проникаюче'),O('np','Non-penetrating','Непроникаюче')]},
+  {k:'cbrn',t:'multi',en:'Exposure',ua:'Вплив',o:[O('C','Chemical','Хімічний'),O('B','Biological','Біологічний'),O('R','Radiological','Радіологічний'),O('N','Nuclear','Ядерний')],w:'w2'},
+  {k:'illness',t:'multi',en:'Illness',ua:'Захворювання',o:[O('som','Somatic','Соматичне'),O('inf','Infectious','Інфекційне'),O('mbd','Mental / behavioral','Психічні та поведінкові розлади'),O('pois','Poisoning','Отруєння')],w:'full'},
+  {k:'mechOther',t:'text',en:'Other',ua:'Інше',w:'w2'}
+ ]},
+ {en:'Injury map (tap to mark)',ua:'Схема травм (торкніться, щоб позначити)',f:[{k:'body',t:'w',w:'full'},{k:'injKey',t:'area',en:'Injury key / description',ua:'Опис ушкоджень',w:'full'}]}
+]},
+{id:'care',en:'Care given (MARCH)',ua:'Надана допомога (MARCH)',src:'001/о [3], [4], [18]; 002/о (5)',g:[
+ {en:'Care before arrival',ua:'Допомога до прибуття',f:[
+  {k:'r1Care',t:'chips',en:'Care given at Role 1 (001/о [15])',ua:'Допомога на Рівні 1',o:[O('y','Given','Надана'),O('u','Unknown','Невідомо'),O('n','Not given','Не надана')],w:'w2'},
+  {k:'careBy',t:'multi',en:'Given by',ua:'Ким надана',o:[O('self','Self','Самодопомога'),O('lay','Lay','Взаємодопомога'),O('medic','Medic','Медик'),O('unk','Unknown','Невідомо'),O('none','Not given','Не надавалась')],w:'full'}
+ ]},
+ {en:'Tourniquets',ua:'Турнікети',f:[{k:'tq',t:'w',w:'full'}]},
+ {en:'M: Massive hemorrhage',ua:'M: Масивна кровотеча',f:[
+  {k:'hem',t:'multi',stamp:1,en:'Hemorrhage control',ua:'Зупинка кровотечі',o:[O('dress','Dressing','Пов’язка'),O('press','Pressure dressing','Тиснуча пов’язка'),O('hemo','Hemostatic dressing','Гемостатична пов’язка'),O('pack','Packing / wound tamponade','Тампонада рани'),O('lig','Ligation','Лігування'),O('oth','Other','Інше')],w:'full'}
+ ]},
+ {en:'A: Airway',ua:'A: Дихальні шляхи',f:[
+  {k:'aw',t:'multi',stamp:1,en:'Airway',ua:'Дихальні шляхи',o:[O('pat','Patent','Прохідні'),O('npa','NPA','НФП'),O('opa','OPA','ОФП'),O('sga','SGA','НГП'),O('ett','ETT','ЕТТ'),O('cric','Cricothyroidotomy','Конікотомія')],w:'full'},
+  {k:'ettCm',t:'num',en:'ETT depth',ua:'Глибина ЕТТ',u:'cm'}
+ ]},
+ {en:'R: Respiration',ua:'R: Дихання',f:[
+  {k:'o2',t:'num',en:'Oxygen',ua:'Кисень',u:'L/min'},
+  {k:'resp',t:'multi',stamp:1,en:'Ventilation',ua:'Вентиляція',o:[O('bvm','Bag-valve mask','Мішок Амбу'),O('vent','Ventilator','Апарат ШВЛ')],w:'w2'},
+  {k:'ndc',t:'multi',stamp:1,en:'Needle decompression',ua:'Голкова декомпресія',o:LR},
+  {k:'cseal',t:'multi',stamp:1,en:'Chest seal',ua:'Оклюзійна пов’язка',o:LR},
+  {k:'csealTR',t:'chips',en:'Chest seal R: type',ua:'Пов’язка справа: тип',o:[O('v','Vented','З клапаном'),O('nv','Non-vented','Без клапана')]},
+  {k:'csealTL',t:'chips',en:'Chest seal L: type',ua:'Пов’язка зліва: тип',o:[O('v','Vented','З клапаном'),O('nv','Non-vented','Без клапана')]},
+  {k:'thor',t:'multi',stamp:1,en:'Thoracostomy / thoracentesis',ua:'Торакоцентез',o:LR},
+  {k:'thorR',t:'multi',en:'R output',ua:'Справа: виділення',o:[O('blood','Blood','Кров'),O('air','Air','Повітря')]},
+  {k:'thorL',t:'multi',en:'L output',ua:'Зліва: виділення',o:[O('blood','Blood','Кров'),O('air','Air','Повітря')]}
+ ]},
+ {en:'C: Circulation',ua:'C: Кровообіг',f:[
+  {k:'access',t:'multi',stamp:1,en:'Vascular access',ua:'Судинний доступ',o:[O('piv','PIV','ПВК'),O('io','IO','ВК'),O('cvc','CVC','ЦВК'),O('art','Arterial','Артеріальний')],w:'w2'},
+  {k:'ioSite',t:'chips',en:'IO site',ua:'Місце ВК доступу',o:[O('hum','Humerus','Плечова'),O('tib','Tibia','Великогомілкова'),O('ster','Sternum','Грудина')]},
+  {k:'ioSide',t:'chips',en:'IO side',ua:'Сторона',o:LR}
+ ]},
+ {en:'H: Hypothermia, head, other',ua:'H: Гіпотермія, голова, інше',f:[
+  {k:'hypo',t:'multi',stamp:1,en:'Hypothermia prevention',ua:'Профілактика гіпотермії',o:[O('act','Active','Активна'),O('pas','Passive','Пасивна')]},
+  {k:'hypoDev',t:'text',en:'Device / means',ua:'Засоби'},
+  {k:'eye',t:'multi',stamp:1,en:'Eye shield',ua:'Захисний щиток для ока',o:LR},
+  {k:'immob',t:'multi',stamp:1,en:'Immobilization',ua:'Іммобілізація',o:[O('cs','C-spine','Шийний відділ'),O('sp','Spine','Хребет'),O('pel','Pelvis','Таз')].concat(LIMBS),w:'full'},
+  {k:'misc',t:'multi',stamp:1,en:'Other procedures',ua:'Інші втручання',o:[O('pill','Pill pack','Індивідуальна аптечка (таблетки)'),O('foley','Urinary catheter','Сечовий катетер'),O('ngt','Gastric tube','Шлунковий зонд'),O('reboa','REBOA','REBOA'),O('decon','Decontamination','Деконтамінація'),O('locA','Local anesthesia','Місцева анестезія'),O('regA','Regional anesthesia','Регіонарна анестезія')],w:'full'},
+  {k:'tetanus',t:'chips',en:'Tetanus prophylaxis',ua:'Профілактика правця',o:YN},
+  {k:'kit',t:'text',en:'Medication kit',ua:'Аптечка / набір'}
+ ]}
+]},
+{id:'meds',en:'Meds, fluids, blood',ua:'Ліки, інфузії, кров',src:'001/о [3.5], [10], [23]; 002/о (5) C; 003-3/о p.2',g:[{en:'',ua:'',f:[{k:'meds',t:'w',w:'full'}]}]},
+{id:'vitals',en:'Vital signs & ventilator',ua:'Показники та ШВЛ',src:'001/о [6]-[8], [19]-[22]; 002/о (4)',g:[
+ {en:'Vital signs chart',ua:'Графік життєвих показників',f:[{k:'vchart',t:'w',w:'full'}]},
+ {en:'Vital signs',ua:'Життєві показники',f:[{k:'vitals',t:'w',w:'full'}]},
+ {en:'Ventilator settings',ua:'Параметри ШВЛ',f:[{k:'vent',t:'w',w:'full'}]},
+ {en:'CPR and death',ua:'СЛР та смерть',f:[
+  {k:'cprStart',t:'time',en:'CPR start',ua:'СЛР початок'},
+  {k:'cprEnd',t:'time',en:'CPR end',ua:'СЛР кінець'},
+  {k:'deathDate',t:'date',en:'Death: date',ua:'Смерть: дата'},
+  {k:'deathTime',t:'time',en:'Death: time',ua:'Смерть: час'},
+  {k:'deathCirc',t:'area',en:'Circumstances',ua:'Обставини',w:'full'}
+ ]}
+]},
+{id:'exam',en:'Patient examination',ua:'Огляд пацієнта',src:'001/о [16] (Role 2)',g:[
+ {en:'Airway and breathing',ua:'Дихальні шляхи та дихання',f:[
+  {k:'exAw',t:'chips',en:'Airway',ua:'Дихальні шляхи',o:[O('pat','Patent','Прохідні'),O('pobs','Partial obstruction','Часткова обструкція'),O('cobs','Complete obstruction','Повна обструкція')],w:'w2'},
+  {k:'exAdj',t:'text',en:'Adjunct (type)',ua:'Засіб (тип)'},
+  {k:'exBr',t:'chips',en:'Breathing',ua:'Дихання',o:[O('free','Free','Вільне'),O('imp','Impaired','Утруднене'),O('abs','Absent','Відсутнє')]},
+  {k:'exTr',t:'chips',en:'Trachea',ua:'Трахея',o:[O('mid','Midline','По середній лінії'),O('devR','Deviated R','Зміщена вправо'),O('devL','Deviated L','Зміщена вліво')],w:'w2'},
+  {k:'exBsR',t:'chips',en:'Breath sounds R',ua:'Дихальні шуми справа',o:[O('p','Present','Наявні'),O('w','Weak','Ослаблені'),O('a','Absent','Відсутні')]},
+  {k:'exBsL',t:'chips',en:'Breath sounds L',ua:'Дихальні шуми зліва',o:[O('p','Present','Наявні'),O('w','Weak','Ослаблені'),O('a','Absent','Відсутні')]},
+  {k:'exRales',t:'multi',en:'Rales',ua:'Хрипи',o:[O('wR','Wet R','Вологі П'),O('wL','Wet L','Вологі Л'),O('dR','Dry R','Сухі П'),O('dL','Dry L','Сухі Л')],w:'w2'},
+  {k:'exChest',t:'chips',en:'Chest wall',ua:'Грудна клітка',o:[O('sym','Symmetric','Симетрична'),O('asR','Asymmetric R','Асиметрія П'),O('asL','Asymmetric L','Асиметрія Л')],w:'w2'},
+  {k:'exFlail',t:'multi',en:'Flail chest',ua:'Флотуюча грудна клітка',o:LR},
+  {k:'exNeckV',t:'chips',en:'Neck veins',ua:'Шийні вени',o:[O('flat','Flat','Спавші'),O('dist','Distended','Набряклі')]},
+  {k:'exHeart',t:'chips',en:'Heart sounds',ua:'Тони серця',o:[O('clr','Clear','Чисті'),O('muf','Muffled','Приглушені')]}
+ ]},
+ {en:'Circulation and skin',ua:'Кровообіг та шкіра',f:[
+  {k:'exSkT',t:'chips',en:'Skin temperature',ua:'Шкіра: температура',o:[O('w','Warm','Тепла'),O('c','Cold','Холодна')]},
+  {k:'exSkC',t:'chips',en:'Skin color',ua:'Шкіра: колір',o:[O('pink','Pink','Рожева'),O('pale','Pale','Бліда'),O('cyan','Cyanotic','Ціанотична')]},
+  {k:'exSkM',t:'chips',en:'Skin moisture',ua:'Шкіра: вологість',o:[O('dry','Dry','Суха'),O('moist','Moist','Волога')]},
+  {k:'exSkO',t:'multi',en:'Skin other',ua:'Шкіра: інше',o:[O('rash','Rash','Висип'),O('edema','Edema','Набряк')]},
+  {k:'exCrt',t:'chips',en:'Capillary refill',ua:'Капілярне наповнення',o:[O('le2','≤ 2 s','≤ 2 с'),O('gt2','> 2 s','> 2 с')]},
+  {k:'exPulseDec',t:'multi',en:'Peripheral pulse decreased',ua:'Периферичний пульс ослаблений',o:LIMBS,w:'w2'},
+  {k:'exPulseAbs',t:'multi',en:'Peripheral pulse absent',ua:'Периферичний пульс відсутній',o:LIMBS,w:'w2'}
+ ]},
+ {en:'Head, spine, abdomen, pelvis, limbs',ua:'Голова, хребет, живіт, таз, кінцівки',f:[
+  {k:'exSkull',t:'chips',en:'Skull fracture',ua:'Перелом черепа',o:YN},
+  {k:'exCsf',t:'chips',en:'CSF leak',ua:'Лікворея',o:YN},
+  {k:'exCsp',t:'chips',en:'Suspected C-spine injury',ua:'Підозра на травму шийного відділу',o:YN},
+  {k:'exAbdS',t:'chips',en:'Abdomen shape',ua:'Живіт: форма',o:[O('n','Normal','Звичайний'),O('d','Distended','Здутий')]},
+  {k:'exAbdP',t:'chips',en:'Abdomen palpation',ua:'Живіт: пальпація',o:[O('nt','Non-tender','Неболючий'),O('t','Tender','Болючий')]},
+  {k:'exPerit',t:'chips',en:'Peritoneal signs',ua:'Перитонеальні симптоми',o:YN},
+  {k:'exAbdPen',t:'chips',en:'Penetrating abdominal injury',ua:'Проникаюче поранення живота',o:YN},
+  {k:'exPelvis',t:'chips',en:'Pelvis stable',ua:'Таз стабільний',o:YN},
+  {k:'exDeform',t:'multi',en:'Extremity deformity',ua:'Деформація кінцівок',o:LIMBS,w:'w2'},
+  {k:'exNeuro',t:'multi',en:'Neuro deficit',ua:'Неврологічний дефіцит',o:LIMBS,w:'w2'}
+ ]},
+ {en:'Neuro and eyes',ua:'Неврологія та очі',f:[
+  {k:'gcsE',t:'chips',en:'GCS eye (E)',ua:'ШКГ: очі (E)',o:[O('1','1'),O('2','2'),O('3','3'),O('4','4')]},
+  {k:'gcsV',t:'chips',en:'GCS verbal (V)',ua:'ШКГ: мова (V)',o:[O('1','1'),O('2','2'),O('3','3'),O('4','4'),O('5','5')]},
+  {k:'gcsM',t:'chips',en:'GCS motor (M)',ua:'ШКГ: рухи (M)',o:[O('1','1'),O('2','2'),O('3','3'),O('4','4'),O('5','5'),O('6','6')]},
+  {k:'pupR',t:'num',en:'Pupil R',ua:'Зіниця П',u:'mm'},
+  {k:'pupL',t:'num',en:'Pupil L',ua:'Зіниця Л',u:'mm'},
+  {k:'pupReact',t:'multi',en:'Light reaction present',ua:'Реакція на світло є',o:LR},
+  {k:'eyePen',t:'multi',en:'Penetrating eye injury',ua:'Проникаюче поранення ока',o:LR},
+  {k:'vision',t:'multi',en:'Vision present',ua:'Зір збережений',o:LR},
+  {k:'exAdd',t:'area',en:'Additional information',ua:'Додаткова інформація',w:'full'}
+ ]}
+]},
+{id:'dx',en:'Diagnostics',ua:'Діагностика',src:'001/о [9], [17]',g:[
+ {en:'E-FAST (serial)',ua:'E-FAST (серійне)',f:[{k:'efast',t:'w',w:'full'}]},
+ {en:'Studies',ua:'Дослідження',f:[
+  {k:'imaging',t:'multi',stamp:1,en:'Studies done',ua:'Виконані дослідження',o:[O('xr','X-ray','Рентген'),O('ct','CT','КТ'),O('ecg','ECG','ЕКГ'),O('us','Ultrasound','УЗД')],w:'w2'},
+  {k:'otoscopy',t:'multi',en:'Otoscopy (abnormal)',ua:'Отоскопія (патологія)',o:LR},
+  {k:'dxDesc',t:'area',en:'Description / additional studies',ua:'Опис / додаткові дослідження',w:'full'}
+ ]},
+ {en:'Laboratory',ua:'Лабораторія',f:[
+  {k:'lHb',t:'num',en:'Hb',ua:'Hb',u:'g/L'},{k:'lHct',t:'num',en:'Hct',ua:'Hct',u:'%'},
+  {k:'lRbc',t:'num',en:'RBC',ua:'Ер.',u:'×10¹²/L'},{k:'lWbc',t:'num',en:'WBC',ua:'Лейк.',u:'×10⁹/L'},
+  {k:'lPlt',t:'num',en:'Plt',ua:'Тромб.',u:'×10⁹/L'},{k:'lNa',t:'num',en:'Na',ua:'Na',u:'mmol/L'},
+  {k:'lK',t:'num',en:'K',ua:'K',u:'mmol/L'},{k:'lCa',t:'num',en:'Ca',ua:'Ca',u:'mmol/L'},
+  {k:'lLac',t:'num',en:'Lactate',ua:'Лактат',u:'mmol/L'},{k:'lPh',t:'num',en:'pH',ua:'pH'},
+  {k:'lPco2',t:'num',en:'pCO₂',ua:'pCO₂',u:'mmHg'},{k:'lPo2',t:'num',en:'pO₂',ua:'pO₂',u:'mmHg'},
+  {k:'lHco3',t:'num',en:'HCO₃',ua:'HCO₃',u:'mmol/L'},{k:'lUrea',t:'num',en:'Urea',ua:'Сечовина',u:'mmol/L'},
+  {k:'lCr',t:'num',en:'Creatinine',ua:'Креатинін',u:'µmol/L'},{k:'lGlu',t:'num',en:'Glucose',ua:'Глюкоза',u:'mmol/L'}
+ ]}
+]},
+{id:'surg',en:'Operative care',ua:'Оперативне втручання',src:'001/о [18]; 003-3/о p.3 header',g:[
+ {en:'Procedures',ua:'Втручання',f:[
+  {k:'proc',t:'multi',stamp:1,en:'Operative procedures',ua:'Операційні втручання',o:[O('canth','Lateral canthotomy','Латеральна кантотомія'),O('trach','Tracheostomy','Трахеостомія'),O('thorx','Thoracotomy','Торакотомія'),O('peric','Pericardiotomy','Перикардіотомія'),O('lap','Laparotomy','Лапаротомія'),O('crani','Craniectomy','Краніектомія'),O('shunt','Vascular shunt','Судинний шунт'),O('exfix','External fixation','Зовнішня фіксація (АЗФ)'),O('amp','Amputation','Ампутація'),O('fasc','Fasciotomy','Фасціотомія'),O('esch','Escharotomy','Ескаротомія'),O('sut','Suturing','Накладання швів'),O('debr','Debridement and irrigation','ПХО та промивання'),O('reboa','REBOA','REBOA')],w:'full'},
+  {k:'ampLimb',t:'multi',en:'Amputation: limb',ua:'Ампутація: кінцівка',o:LIMBS,w:'w2'},
+  {k:'fascLimb',t:'multi',en:'Fasciotomy: limb',ua:'Фасціотомія: кінцівка',o:LIMBS,w:'w2'},
+  {k:'thorxOut',t:'multi',en:'Thoracotomy: output (L)',ua:'Торакотомія: виділення (Л)',o:[O('blood','Blood','Кров'),O('air','Air','Повітря')],w:'w2'},
+  {k:'exfixLimb',t:'multi',en:'Ex-fix: site',ua:'АЗФ: локалізація',o:[O('pel','Pelvis','Таз')].concat(LIMBS),w:'w2'}
+ ]},
+ {en:'Surgery times and team',ua:'Час операції та бригада',f:[
+  {k:'anType',t:'multi',en:'Type of anesthesia',ua:'Вид знеболення',o:[O('loc','Local','Місцева'),O('reg','Regional','Регіонарна'),O('gen','General','Загальна'),O('sed','Sedation','Седація')],w:'w2'},
+  {k:'opDate',t:'date',en:'Surgery date',ua:'Дата операції'},
+  {k:'opStart',t:'time',en:'Start of surgery',ua:'Початок операції'},
+  {k:'opEndDate',t:'date',en:'End of surgery: date',ua:'Кінець операції: дата'},
+  {k:'opEnd',t:'time',en:'End of surgery',ua:'Кінець операції'},
+  {k:'surgeon',t:'text',en:'Surgeon',ua:'Хірург'},
+  {k:'assist',t:'text',en:'Assistants',ua:'Асистенти'},
+  {k:'opName',t:'text',en:'Operation performed',ua:'Назва операції',w:'w2'},
+  {k:'opNotes',t:'area',en:'Operative findings / notes',ua:'Операційні знахідки / примітки',w:'full'}
+ ]}
+]},
+{id:'preop',en:'Anesthesia: pre-op exam',ua:'Анестезія: передопераційний огляд',src:'003-3/о p.1',g:[
+ {en:'Facility (form header)',ua:'Заклад (шапка форми)',f:[
+  {k:'facName',t:'text',en:'Healthcare facility name',ua:'Найменування закладу охорони здоров’я',w:'w2'},
+  {k:'facAddr',t:'text',en:'Full postal address',ua:'Повна поштова адреса',w:'w2'},
+  {k:'edrpou',t:'text',en:'EDRPOU code',ua:'Код за ЄДРПОУ'}
+ ]},
+ {en:'Pre-op status',ua:'Стан перед операцією',f:[
+  {k:'poDate',t:'date',en:'Exam date',ua:'Дата огляду'},{k:'poTime',t:'time',en:'Exam time',ua:'Час огляду'},
+  {k:'poUrg',t:'chips',en:'Surgery is',ua:'Операція',o:[O('el','Elective','Планова'),O('urg','Urgent','Термінова')]},
+  {k:'poFor',t:'text',en:'Being prepared for surgery for',ua:'Готується до операції з приводу',w:'w2'},
+  {k:'poBp',t:'text',en:'BP',ua:'АТ',u:'mmHg'},{k:'poHr',t:'num',en:'Pulse',ua:'Пульс',u:'/min'},{k:'poRr',t:'num',en:'Resp. rate',ua:'ЧД',u:'/min'},
+  {k:'poStange',t:'num',en:'Stange test',ua:'Проба Штанге',u:'s'},{k:'poSaab',t:'num',en:'Saabraze test',ua:'Проба Сообразе',u:'s'},
+  {k:'poComp',t:'area',en:'Complaints at examination',ua:'Скарги під час огляду',w:'full'}
+ ]},
+ {en:'History',ua:'Анамнез',f:[
+  {k:'hxPrev',t:'area',en:'Previous illnesses (which, when)',ua:'Попередні захворювання (які, коли)',w:'w2'},
+  {k:'hxChron',t:'area',en:'Chronic illnesses (which, duration, last exacerbation, phase)',ua:'Хронічні захворювання (які, давність, останнє загострення, фаза)',w:'w2'},
+  {k:'hxOps',t:'area',en:'Previous operations and anesthetics (what, when, complications)',ua:'Перенесені операції, наркози (назва, коли, ускладнення)',w:'w2'},
+  {k:'hxAll',t:'area',en:'Allergy history',ua:'Алергологічний анамнез',w:'w2'},
+  {k:'hxTx',t:'chips',en:'Blood transfusion',ua:'Переливання крові',o:YN},{k:'hxTxR',t:'chips',en:'Reactions',ua:'Реакції',o:[O('y','Yes','Були'),O('n','None','Не було')]},
+  {k:'hxSter',t:'chips',en:'Corticosteroids',ua:'Кортикостероїди',o:YN},{k:'hxSterD',t:'text',en:'Steroid dose',ua:'Доза'},
+  {k:'hxSmk',t:'chips',en:'Smoking',ua:'Паління',o:YN},{k:'hxEtoh',t:'chips',en:'Alcohol',ua:'Алкоголь',o:YN},{k:'hxDrug',t:'chips',en:'Drug use',ua:'Наркоманія',o:YN}
+ ]},
+ {en:'Physical examination',ua:'Об’єктивний статус',f:[
+  {k:'peGen',t:'chips',en:'General condition',ua:'Загальний стан',o:[O('1','Satisfactory','Задовільний'),O('2','Fairly satisfactory','Відносно задовільний'),O('3','Moderately severe','Середньої тяжкості'),O('4','Severe','Тяжкий'),O('5','Very severe','Дуже тяжкий'),O('6','Critical','Критичний')],w:'full'},
+  {k:'peBuild',t:'chips',en:'Build',ua:'Будова тіла',o:[O('n','Normosthenic','Нормостенічна'),O('a','Asthenic','Астенічна'),O('h','Hypersthenic','Гіперстенічна')],w:'w2'},
+  {k:'wt',t:'num',en:'Weight',ua:'Маса тіла',u:'kg'},{k:'ht',t:'num',en:'Height',ua:'Зріст',u:'cm'},{k:'bmi',t:'w'},
+  {k:'peSkin',t:'chips',en:'Skin',ua:'Шкіра',o:[O('n','Normal color','Звичайного кольору'),O('p','Pale','Бліда'),O('c','Cyanotic','Ціанотична'),O('j','Jaundiced','Жовтянична')],w:'w2'},
+  {k:'peMuc',t:'chips',en:'Mucosa',ua:'Слизові',o:[O('pink','Pink','Рожеві'),O('pale','Pale','Бліді'),O('ict','Icteric','Іктеричні')]},
+  {k:'peVar',t:'chips',en:'Varicose veins',ua:'Варикозне розширення вен',o:YN},{k:'peThr',t:'chips',en:'Signs of thrombophlebitis',ua:'Ознаки тромбофлебіту',o:YN},
+  {k:'peNeck',t:'chips',en:'Neck',ua:'Шия',o:[O('n','Normal','Звичайна'),O('s','Short','Коротка'),O('l','Long','Довга')]},
+  {k:'peDSE',t:'multi',en:'Present',ua:'Наявні',o:[O('def','Deformities','Деформації'),O('scar','Scars','Рубці'),O('ed','Edema','Набряки')],w:'w2'},
+  {k:'peTeeth',t:'chips',en:'Teeth treated',ua:'Зуби сановані',o:YN},{k:'peDentSide',t:'multi',en:'Denture side',ua:'Протези: сторона',o:LR},{k:'peDent',t:'multi',en:'Dentures',ua:'Протези',o:[O('no','None','Немає'),O('up','Upper','Верхні'),O('lo','Lower','Нижні')]},
+  {k:'peMall',t:'chips',en:'Mallampati class',ua:'Клас за Малампаті',o:[O('1','I'),O('2','II'),O('3','III'),O('4','IV')]},
+  {k:'peTongue',t:'chips',en:'Tongue',ua:'Язик',o:[O('m','Moist','Вологий'),O('d','Dry','Сухий'),O('c','Coated','З нальотом')]},
+  {k:'peNose',t:'multi',en:'Nasal breathing impaired',ua:'Утруднене носове дихання',o:LR},
+  {k:'peNoseD',t:'chips',en:'Nasal discharge',ua:'Виділення з носа',o:[O('n','None','Немає'),O('m','Mucous','Слизові'),O('mp','Mucopurulent','Слизово-гнійні'),O('p','Purulent','Гнійні')],w:'w2'},
+  {k:'peLungR',t:'chips',en:'Lungs R',ua:'Легені справа',o:[O('v','Vesicular','Везикулярне'),O('h','Harsh','Жорстке'),O('w','Decreased','Ослаблене')]},
+  {k:'peLungL',t:'chips',en:'Lungs L',ua:'Легені зліва',o:[O('v','Vesicular','Везикулярне'),O('h','Harsh','Жорстке'),O('w','Decreased','Ослаблене')]},
+  {k:'peLungCond',t:'chips',en:'Breath sounds conducted',ua:'Дихання проводиться',o:[O('all','Throughout all fields','По всіх полях'),O('area','Absent in an area','Не проводиться в зоні')],w:'w2'},
+  {k:'peLungArea',t:'text',en:'Area where not conducted',ua:'Зона, де не проводиться',w:'w2'},
+  {k:'peRales',t:'chips',en:'Rales',ua:'Хрипи',o:[O('n','None','Немає'),O('d','Dry','Сухі'),O('f','Fine','Дрібнопухирчасті'),O('m','Medium','Середньопухирчасті'),O('c','Coarse','Великопухирчасті')],w:'w2'},
+  {k:'peRalesLoc',t:'text',en:'Rales location',ua:'Локалізація хрипів'},
+  {k:'peHs',t:'chips',en:'Heart sounds',ua:'Тони серця',o:[O('l','Loud','Гучні'),O('m','Muffled','Приглушені'),O('d','Distant','Глухі'),O('c','Clear','Чисті'),O('mur','Murmur','Шум')],w:'w2'},
+  {k:'pePulse',t:'chips',en:'Pulse',ua:'Пульс',o:[O('s','Soft','М’який'),O('t','Tense','Напружений'),O('w','Weak','Слабкий'),O('th','Thready','Ниткоподібний'),O('np','Not palpable','Не визначається')],w:'w2'},
+  {k:'peArr',t:'chips',en:'Arrhythmia',ua:'Порушення ритму',o:YN},{k:'peDef',t:'num',en:'Pulse deficit',ua:'Дефіцит пульсу',u:'/min'},
+  {k:'peAbd',t:'multi',en:'Abdomen',ua:'Живіт',o:[O('soft','Soft','М’який'),O('tense','Tense','Напружений'),O('sym','Symmetric','Симетричний'),O('dist','Distended','Здутий'),O('breath','Moves with breathing','Бере участь у диханні')],w:'full'},
+  {k:'peBowel',t:'chips',en:'Bowel sounds',ua:'Кишкові шуми',o:YN},
+  {k:'peLiver',t:'chips',en:'Liver palpable',ua:'Печінка пальпується',o:YN},{k:'peLiverCm',t:'num',en:'cm below costal margin',ua:'см з-під краю реберної дуги',u:'cm'},
+  {k:'peKid',t:'multi',en:'Kidneys palpable',ua:'Нирки пальпуються',o:LR},
+  {k:'pePast',t:'multi',en:'Pasternatsky sign positive',ua:'Симптом Пастернацького позитивний',o:LR},
+  {k:'peUrine',t:'chips',en:'Urination',ua:'Сечовиділення',o:[O('f','Free','Вільне'),O('l','Labored','Утруднене')]},
+  {k:'peStool',t:'chips',en:'Stool',ua:'Стул',o:[O('n','Normal','Норма'),O('d','Diarrhea','Діарея'),O('c','Constipation','Запори')]},
+  {k:'peNeuro',t:'chips',en:'Neuro-psychiatric findings',ua:'Нервово-психічні особливості',o:[O('n','None','Немає'),O('y','Present','Є')]},
+  {k:'peEcg',t:'text',en:'ECG',ua:'ЕКГ',w:'w2'}
+ ]},
+ {en:'Conclusion',ua:'Висновок',f:[
+  {k:'asa',t:'chips',en:'ASA class',ua:'Ступінь ризику за ASA',o:[O('1','I'),O('2','II'),O('3','III'),O('4','IV'),O('5','V'),O('6','VI')]},
+  {k:'asaE',t:'chips',en:'Emergency (E)',ua:'Ургентне втручання (E)',o:[O('E','E')]},
+  {k:'planOp',t:'text',en:'Planned operation',ua:'Планується оперативне втручання',w:'w2'},
+  {k:'planAn',t:'multi',en:'Planned anesthesia',ua:'Планується анестезія',o:[O('gen','General','Загальна'),O('reg','Regional','Регіонарна'),O('loc','Local','Місцева')],w:'w2'},
+  {k:'planGen',t:'multi',en:'General: technique',ua:'Загальна: методика',o:[O('inh','Inhalational','Інгаляційний'),O('iv','Intravenous','Внутрішньовенний'),O('im','Intramuscular','Внутрішньом’язовий'),O('sb','Spontaneous breathing','Зі спонтанним диханням'),O('mv','With ventilation','З ШВЛ'),O('comb','Combined general','Комбінована загальна'),O('anseda','Analgosedation','Аналгоседація')],w:'full'},
+  {k:'planReg',t:'multi',en:'Regional: technique',ua:'Регіонарна: методика',o:[O('nb','Nerve block','Провідникова'),O('tr','Trunk block','Стовбурова'),O('plex','Plexus block','Плексусна'),O('neur','Neuraxial','Нейроаксіальна'),O('epi','Epidural','Епідуральна'),O('spin','Spinal','Субарахноїдальна'),O('comb','Combined regional','Комбінована регіонарна')],w:'full'},
+  {k:'vte',t:'text',en:'Thromboembolism prophylaxis',ua:'Профілактика тромбоемболічних ускладнень',w:'w2'},
+  {k:'wip',t:'text',en:'Wound infection prophylaxis',ua:'Профілактика ранових ускладнень',w:'w2'},
+  {k:'premed40',t:'text',en:'Premedication 40 min before surgery',ua:'Премедикація за 40 хв до операції',w:'w2'},
+  {k:'premedT',t:'text',en:'Premedication on the table',ua:'Премедикація на столі',w:'w2'},
+  {k:'anesDoc',t:'text',en:'Anesthesiologist',ua:'Лікар-анестезіолог'}
+ ]}
+]},
+{id:'anes',en:'Anesthesia record',ua:'Протокол знеболення',src:'003-3/о pp.2-3',g:[
+ {en:'Team and times',ua:'Бригада та час',f:[
+  {k:'anRecNo',t:'text',en:'Anesthesia record No.',ua:'Протокол знеболення №'},
+  {k:'anNurse',t:'text',en:'Anesthesia nurse',ua:'Медсестра-анестезист'},
+  {k:'anTotH',t:'num',en:'Total anesthesia time',ua:'Загальна тривалість анестезії',u:'min'},
+  {k:'opTotH',t:'num',en:'Total operating time',ua:'Загальна тривалість операції',u:'min'},
+  {k:'arrOr',t:'chips',en:'Brought to OR',ua:'Доставлений до операційної',o:[O('ly','Lying','Лежачи'),O('si','Sitting','Сидячи'),O('wa','Walking','Пішки')],w:'w2'},
+  {k:'arrOrT',t:'time',en:'Arrival in OR',ua:'Час доставки'}
+ ]},
+ {en:'Induction',ua:'Індукція',f:[
+  {k:'emo',t:'chips',en:'Emotional state',ua:'Психоемоційний стан',o:[O('calm','Calm','Спокій'),O('tense','Tense','Напруження'),O('anx','Anxious','Тривога'),O('fear','Afraid','Страх')],w:'w2'},
+  {k:'unch',t:'chips',en:'Condition unchanged from pre-op exam',ua:'Стан без змін відносно первинного огляду',o:YN,w:'w2'},
+  {k:'sleepMin',t:'num',en:'Asleep at',ua:'Сон настав на',u:'min'},
+  {k:'sleepQ',t:'chips',en:'Induction',ua:'Перебіг індукції',o:[O('nx','No excitation','Без збудження'),O('sm','Slight muscle tension','Незначне м’язове напруження'),O('mm','Marked muscle tension','Значне м’язове напруження'),O('me','Motor excitation','Рухове збудження'),O('ve','Verbal excitation','Мовне збудження')],w:'full'},
+  {k:'preox',t:'chips',en:'Preoxygenation',ua:'Преоксигенація',o:YN},
+  {k:'headPos',t:'chips',en:'Head position',ua:'Розміщення голови',o:[O('cl','Classic','Класичне'),O('sn','Sniffing','Поліпшене')]},
+  {k:'relax',t:'text',en:'Relaxant at induction (drug)',ua:'Релаксант при індукції (препарат)'},
+  {k:'relaxDose',t:'num',en:'Dose',ua:'Доза',u:'mg'}
+ ]},
+ {en:'Airway and ventilation',ua:'Дихальні шляхи та ШВЛ',f:[
+  {k:'intub',t:'chips',en:'Tracheal intubation',ua:'Інтубація трахеї',o:YN},
+  {k:'tubeNo',t:'text',en:'Tube No.',ua:'Трубка №'},{k:'cuff',t:'chips',en:'Cuff',ua:'Манжетка',o:YN},
+  {k:'attempts',t:'num',en:'Attempts',ua:'Спроби'},{k:'intDur',t:'num',en:'Duration',ua:'Тривалість',u:'s'},
+  {k:'lma',t:'text',en:'Laryngeal mask size No.',ua:'Ларингомаска №'},
+  {k:'oroPack',t:'chips',en:'Oropharyngeal packing',ua:'Тампонада ротоглотки',o:YN},
+  {k:'mvDev',t:'text',en:'Ventilator (machine)',ua:'ШВЛ апаратом'},{k:'mvMode',t:'text',en:'Ventilation mode',ua:'Режим ШВЛ'},{k:'mvFio2',t:'num',en:'FiO₂',ua:'FiO₂'},
+  {k:'mvPinsp',t:'num',en:'Circuit pressure insp.',ua:'Тиск у системі: вдих',u:'mmHg'},{k:'mvPexp',t:'num',en:'Circuit pressure exp.',ua:'Тиск у системі: видих',u:'mmHg'},
+  {k:'mvTv',t:'num',en:'Tidal volume',ua:'ДО',u:'mL'},{k:'mvMinv',t:'num',en:'Minute volume',ua:'ХОД',u:'L'},{k:'mvPeep',t:'num',en:'PEEP',ua:'ПТКВ'},
+  {k:'mvInh',t:'num',en:'Inhaled agent flow',ua:'Потік інгаляційного анестетика',u:'L/min'},
+  {k:'warm',t:'num',en:'Gas warming',ua:'Підігрів суміші',u:'°C'},{k:'humid',t:'chips',en:'Gas humidification',ua:'Зволоження суміші',o:YN},
+  {k:'circuit',t:'chips',en:'Circuit',ua:'Контур',o:[O('c','Closed','Закритий'),O('sc','Semi-closed','Напівзакритий'),O('so','Semi-open','Напіввідкритий'),O('o','Open','Відкритий')],w:'w2'},
+  {k:'relaxMaint',t:'text',en:'Relaxation maintained with',ua:'Релаксація під час операції підтримувалась',w:'w2'}
+ ]},
+ {en:'Anesthesia chart',ua:'Лист знеболення (графік)',f:[{k:'vchart',t:'w',w:'full'}]},
+ {en:'Fluids and blood totals',ua:'Інфузії та кров: разом',f:[{k:'ftot',t:'w',w:'full'}]},
+ {en:'Intra-op course',ua:'Перебіг анестезії',f:[
+  {k:'course',t:'chips',en:'Course of anesthesia',ua:'Перебіг наркозу',o:[O('n','Normal','Нормальний'),O('c','Complicated','Ускладнений')]},
+  {k:'hemoSt',t:'chips',en:'Hemodynamics stable',ua:'Гемодинаміка стабільна',o:YN},
+  {k:'pulseReg',t:'chips',en:'Pulse regular',ua:'Пульс ритмічний',o:YN},
+  {k:'ebl',t:'num',en:'Blood loss',ua:'Крововтрата',u:'mL'},{k:'uop',t:'num',en:'Urine output',ua:'Діурез',u:'mL'},
+  {k:'stages',t:'w',w:'full'}
+ ]},
+ {en:'Emergence and transfer',ua:'Вихід з наркозу та переведення',f:[
+  {k:'emerg',t:'chips',en:'Emergence',ua:'Вихід з наркозу',o:[O('n','Normal','Нормальний'),O('c','Complicated','Ускладнений')]},
+  {k:'reflex',t:'chips',en:'Reflexes returned',ua:'Рефлекси відновилися',o:[O('f','Fully','Повністю'),O('p','Partly','Частково'),O('n','Not returned','Не відновилися')],w:'w2'},
+  {k:'consc',t:'chips',en:'Consciousness returned',ua:'Свідомість відновилася',o:[O('n','No','Ні'),O('p','Partly','Частково'),O('f','Fully','Повністю'),O('b','Basic contact','Елементарний контакт')],w:'w2'},
+  {k:'spont',t:'chips',en:'Spontaneous breathing',ua:'Самостійне дихання',o:[O('ad','Adequate','Адекватне'),O('in','Inadequate','Неадекватне'),O('dp','Deep','Глибоке'),O('sh','Shallow','Поверхневе'),O('ab','Absent','Відсутнє')],w:'w2'},
+  {k:'postVent',t:'chips',en:'Ventilation continued',ua:'Проводиться ШВЛ',o:[O('c','Controlled','Примусова'),O('a','Assisted','Допоміжна')]},
+  {k:'extub',t:'chips',en:'Extubation done',ua:'Екстубація трахеї',o:YN},
+  {k:'toWard',t:'text',en:'Transferred to ward of department',ua:'Переведений до палати відділення',w:'w2'},
+  {k:'careAcc',t:'time',en:'Care accepted at',ua:'Нагляд прийняв о'},
+  {k:'careAccBy',t:'text',en:'Care accepted by',ua:'Нагляд прийняв (ПІБ)'}
+ ]},
+ {en:'Spinal / epidural record',ua:'Протокол пункції субарахноїдального / епідурального простору',f:[
+  {k:'nxType',t:'chips',en:'Technique',ua:'Методика',o:[O('sp','Spinal','Субарахноїдальна'),O('ep','Epidural','Епідуральна')]},
+  {k:'nxPos',t:'chips',en:'Position',ua:'Положення',o:[O('si','Sitting','Сидячи'),O('ly','Lying','Лежачи')]},
+  {k:'nxDate',t:'date',en:'Date',ua:'Дата'},
+  {k:'nxTime',t:'time',en:'Time',ua:'Час'},
+  {k:'nxLidoPct',t:'num',en:'Lidocaine',ua:'Лідокаїн',u:'%'},{k:'nxLidoMl',t:'num',en:'Lidocaine volume',ua:'Лідокаїн, об’єм',u:'mL'},
+  {k:'nxLevel',t:'text',en:'Level',ua:'Рівень'},{k:'nxG',t:'num',en:'Needle',ua:'Голка',u:'G'},
+  {k:'nxTest',t:'num',en:'Test dose',ua:'Тест-доза',u:'mL'},{k:'nxMain',t:'num',en:'Main dose',ua:'Основна доза',u:'mL'},
+  {k:'nxOnset',t:'num',en:'Block onset',ua:'Анестезія розвинулась на',u:'min'},{k:'nxSens',t:'text',en:'Sensory block level',ua:'Рівень сенсорного блоку'},
+  {k:'nxEff',t:'text',en:'Block effectiveness',ua:'Ефективність анестезії'},{k:'nxDress',t:'chips',en:'Sterile dressing',ua:'Асептична пов’язка',o:YN}
+ ]},
+ {en:'Signatures (003-3/о)',ua:'Підписи (003-3/о)',f:[
+  {k:'sigAnes',t:'w',w:'w2'},{k:'sigNurse',t:'w',w:'w2'},{k:'headDept',t:'text',en:'Head of department',ua:'Завідувач відділення',w:'w2'},{k:'sigHead',t:'w',w:'w2'}
+ ]}
+]},
+{id:'disp',en:'Disposition & sign-off',ua:'Евакуація та підпис',src:'001/о [11]-[14] (pre-Role 2), [24]-[27] (Role 2); 002/о (6)',g:[
+
+ {en:'PART 1 (to Role 2): diagnosis and notes (001/о [11]-[12])',ua:'ЧАСТИНА 1 (до Рівня 2): діагноз та примітки',f:[
+  {k:'diag',t:'area',en:'Diagnosis',ua:'Діагноз',w:'full'},
+  {k:'notes',t:'area',en:'Notes',ua:'Примітки',w:'full'}
+ ]},
+
+ {en:'PART 1: departure (001/о [13])',ua:'ЧАСТИНА 1: вибуття',f:DEP('')},
+
+ {en:'PART 1: provider (001/о [14]; 002/о (6))',ua:'ЧАСТИНА 1: медичний працівник',f:PROV('')},
+
+ {en:'PART 2 (Role 2): diagnosis and notes (001/о [24]-[25])',ua:'ЧАСТИНА 2 (Рівень 2): діагноз та примітки',f:[
+  {k:'diag2',t:'area',en:'Diagnosis',ua:'Діагноз',w:'full'},
+  {k:'notes2',t:'area',en:'Notes',ua:'Примітки',w:'full'}
+ ]},
+
+ {en:'PART 2: departure (001/о [26])',ua:'ЧАСТИНА 2: вибуття',f:DEP('2')},
+
+ {en:'PART 2: provider (001/о [27])',ua:'ЧАСТИНА 2: медичний працівник',f:PROV('2')}
+]},
+{id:'tl',en:'Timeline & export',ua:'Хронологія та експорт',src:'All sections',g:[{en:'',ua:'',f:[{k:'timeline',t:'w',w:'full'}]}]}
+];
+
+/* ---------- data ---------- */
+var inClaude=!!(window.claude&&window.claude.use),KEY='storm2_ucr_v1', recs={}, cur=null, sec='pt', db=null, dl=null, dict=null;
+function uid(){return 'C'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).slice(2,5).toUpperCase();}
+function pad(n){return (n<10?'0':'')+n;}
+function nowT(){return hms(nowMs());}
+function today(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function blank(){return {id:uid(),created:new Date().toISOString(),updated:'',role:'1',f:{},stamps:{},tq:{},meds:[],vitals:[],vent:[],body:[],stages:[],efast:{},efx:[],efastInt:30,sigs:{},voice:[],marks:[]};}
+function load(){try{var s=localStorage.getItem(KEY);if(s){var o=JSON.parse(s);recs=o.recs||{};cur=o.cur;}}catch(e){}
+ Object.keys(recs).forEach(function(k){var r=recs[k];if(r.f.peWt&&!r.f.wt)r.f.wt=r.f.peWt;if(r.f.csealT&&!r.f.csealTR){r.f.csealTR=r.f.csealT;r.f.csealTL=r.f.csealT;delete r.f.csealT;}if(r.sig&&!r.sigs){r.sigs={sig:r.sig};}if(r.f.peHt&&!r.f.ht)r.f.ht=r.f.peHt;if(!r.efx){r.efx=[];if(r.efast&&Object.keys(r.efast).some(function(z){return r.efast[z];}))r.efx.push({id:uid(),time:'',role:r.role,z:r.efast,by:'',note:''});}});
+ if(!cur||!recs[cur]){var r=blank();recs[r.id]=r;cur=r.id;}}
+var saveT=null;
+function save(){var r=R();r.updated=new Date().toISOString();
+ try{localStorage.setItem(KEY,JSON.stringify({recs:recs,cur:cur}));}catch(e){}
+ clearTimeout(saveT);saveT=setTimeout(sync,1500);}
+function sync(){if(!db)return;var r=R();try{var p=db.doc('casualties/'+r.id).set(JSON.parse(JSON.stringify(r)));if(p&&p.catch)p.catch(function(){});}catch(e){}}
+function R(){return recs[cur];}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none';},2200);}
+
+/* ---------- header ---------- */
+function elapsed(hhmm){if(!hhmm)return '';var p=hhmm.split(':'),d=new Date(),m=d.getHours()*60+d.getMinutes()-(+p[0]*60+ +p[1]);if(m<0)m+=1440;return Math.floor(m/60)+'h '+pad(m%60)+'m';}
+function header(){
+ var r=R(),f=r.f;
+ document.getElementById('hTitle').innerHTML=esc(T('STORM-2 Unified Casualty Record','STORM-2 Єдина картка пораненого'))+'<small>001/о + 002/о + 003-3/о · '+esc(T('training prototype','навчальний прототип'))+'</small>';
+ var tri={R:['red',T('RED','ЧЕРВОНА')],Y:['amb',T('YELLOW','ЖОВТА')],G:['grn',T('GREEN','ЗЕЛЕНА')],B:['blk',T('BLACK','ЧОРНА')]}[f.triage];
+ var h='<b>'+esc(f.name||T('Unnamed casualty','Пацієнт без імені'))+'</b>';
+ if(f.cardNo)h+='<span class="tag">№ '+esc(f.cardNo)+'</span>';
+ if(tri)h+='<span class="tag '+tri[0]+'">'+tri[1]+'</span>';
+ if(f.allergy==='y')h+='<span class="tag red">'+esc(T('ALLERGY','АЛЕРГІЯ'))+(f.allergyTxt?': '+esc(f.allergyTxt):'')+'</span>';
+ var aw=[f.age&&(f.age+' '+T('yrs','р.')),f.wt&&(f.wt+' kg')].filter(Boolean).join(' · ');if(aw)h+='<span class="tag">'+esc(aw)+'</span>';
+ if(f.abo)h+='<span class="tag">'+esc(f.abo==='nd'?T('Blood ?','Група ?'):f.abo+(f.rh||''))+'</span>';
+ var efd=efDue();if(efd)h+='<span class="tag '+(efd.late>0?'red':'')+'">E-FAST '+(efd.late>0?esc(T('overdue ','прострочено '))+efd.late+'′':esc(T('due ','о '))+efd.due)+'</span>';
+ if(f.incTime)h+='<span class="tag">'+esc(T('Since injury','Від поранення'))+' '+elapsed(f.incTime)+'</span>';
+ var tm='';Object.keys(r.tq).forEach(function(k){var q=r.tq[k];if(q&&q.applied&&!q.removed&&!q.converted)tm+='<span class="tag red">TQ '+esc(tqName(k))+' '+elapsed(q.applied)+'</span>';});
+ h+='<span class="timers">'+tm+'</span>';
+ document.getElementById('ptBanner').innerHTML=h;
+ var rs='<span>'+esc(T('Role','Рівень'))+'</span>';ROLES.forEach(function(x){rs+='<button class="hb'+(r.role===x?' on':'')+'" data-role="'+x+'">'+x+'</button>';});
+ document.getElementById('roleSel').innerHTML=rs;
+ var bv=document.getElementById('bVoice');bv.classList.toggle('live',V.on);bv.innerHTML=V.on?'■ REC <span id="recT">'+mmss(nowMs()-V.t0)+'</span>':'● '+esc(T('Record','Запис'));
+ document.getElementById('bPanel').textContent=(V.panel?'▸ ':'◂ ')+T('Transcript','Транскрипт')+' ('+((R().voice||[]).length)+')';
+ document.getElementById('bList').textContent=T('Casualties','Поранені')+' ('+Object.keys(recs).length+')';
+ document.getElementById('bNew').textContent='+ '+T('New','Новий');
+ document.getElementById('bLang').textContent=L==='ua'?'EN':'UA';
+ document.getElementById('bKp').classList.toggle('on',kpOn);
+}
+
+/* ---------- nav ---------- */
+function countSec(s){var n=0,t=0,f=R().f;s.g.forEach(function(g){g.f.forEach(function(x){if(x.t==='w')return;t++;var v=f[x.k];if(v!=null&&v!==''&&!(Array.isArray(v)&&!v.length))n++;});});return [n,t];}
+function nav(){var h='';S.forEach(function(s){var c=countSec(s),b='';
+ if(s.id==='meds')b=R().meds.length;else if(s.id==='vitals')b=R().vitals.length+(c[0]?'·'+c[0]:'');else if(s.id==='tl')b='';else b=c[0]+'/'+c[1];
+ var SHL={pt:['Patient','Пацієнт'],mech:['Injuries','Травми'],care:['MARCH','MARCH'],meds:['Meds','Ліки'],vitals:['Vitals','Показники'],exam:['Exam','Огляд'],dx:['Dx / FAST','Діагн.'],surg:['Surgery','Операція'],preop:['Pre-op','Передоп.'],anes:['Anesthesia','Анест.'],disp:['Disposition','Евакуація'],tl:['Timeline','Хронол.']};h+='<button data-sec="'+s.id+'" class="'+(sec===s.id?'on':'')+'"><span class="lg">'+(S.indexOf(s)+1)+'. '+esc(T(s.en,s.ua))+'</span><span class="sh">'+(S.indexOf(s)+1)+'. '+esc(T(SHL[s.id][0],SHL[s.id][1]))+'</span>'+(b!==''?'<span class="n">'+b+'</span>':'')+'</button>';});
+ document.getElementById('nav').innerHTML=h;}
+
+/* ---------- fields ---------- */
+var agePick=null;
+function ibwCalc(){var f=R().f,h=parseFloat(f.ht);if(!h||!f.sex)return '';var w=(f.sex==='F'?45.5:50)+0.9055*(h-152.4);return w>0?w.toFixed(1):'';}
+function ibwNote(){var f=R().f;if(!f.ht||!f.sex)return T('Auto-fills from height and sex (Devine formula).','Розраховується за зростом і статтю (формула Девайна).');return T('Devine formula: ','Формула Девайна: ')+(f.sex==='F'?'45.5':'50')+' + 0.9 × ('+f.ht+' − 152.4)';}
+function syncIbw(){var f=R().f;if(f.ibwManual)return;var c=ibwCalc();f.ibw=c;var el=document.getElementById('ibwIn');if(el){el.value=c;}var n=document.getElementById('ibwNote');if(n)n.textContent=ibwNote();}
+function ageFromDob(d){if(!d)return '';var b=new Date(d),n=new Date();if(isNaN(b))return '';var a=n.getFullYear()-b.getFullYear();if(n.getMonth()<b.getMonth()||(n.getMonth()===b.getMonth()&&n.getDate()<b.getDate()))a--;return a>=0&&a<=110?String(a):'';}
+function lab(x,extra){return '<div class="lab"><span>'+esc(T(x.en,x.ua))+(x.u?' <span class="unit">('+esc(x.u)+')</span>':'')+'</span>'+(extra||'')+'</div>';}
+function fld(x){var f=R().f,v=f[x.k],h='';
+ if(x.t==='w')return '<div class="fld '+(x.w||'')+'">'+widget(x.k)+'</div>';
+ if(x.t==='chips'||x.t==='multi'){h=lab(x)+'<div class="chips">';x.o.forEach(function(o){var on=x.t==='multi'?(v||[]).indexOf(o[0])>=0:v===o[0];var st='';
+   if(on&&x.stamp){var s=R().stamps[x.k+':'+o[0]];if(s)st='<span class="st">R'+esc(s.role)+' '+esc(s.t)+'</span>';}
+   h+='<button class="chip'+(on?' on':'')+'" data-k="'+x.k+'" data-v="'+esc(o[0])+'" data-m="'+(x.t==='multi'?1:0)+'">'+esc(T(o[1],o[2]))+st+'</button>';});h+='</div>';}
+ else if(x.t==='area'){h=lab(x,dict?'<button class="mic" data-mic="'+x.k+'">🎙 '+esc(T('Dictate','Диктувати'))+'</button>':'')+'<textarea data-k="'+x.k+'">'+esc(v)+'</textarea>';}
+ else if(x.t==='time'){h=lab(x)+'<div class="tw"><input type="text" data-time="1" inputmode="'+IMT()+'" placeholder="--:--" autocomplete="off" data-k="'+x.k+'" value="'+esc(v)+'"><button class="now" data-now="'+x.k+'">'+esc(T('Now','Зараз'))+'</button></div>';}
+ else if(x.t==='age'){h=lab(x)+'<button class="agebtn'+(v?' set':'')+'" data-agepick="'+x.k+'">'+(v?esc(v)+' '+esc(T('yrs','р.')):esc(T('Select age','Оберіть вік')))+' <span>▾</span></button>';
+  if(agePick===x.k){h+='<div class="agelist" id="ageList"><button class="ageopt" data-ageset="">'+esc(T('Unknown / clear','Невідомо / очистити'))+'</button>';for(var a=1;a<=100;a++)h+='<button class="ageopt'+(String(a)===String(v)?' on':'')+'" data-ageset="'+a+'" id="age'+a+'">'+a+'</button>';h+='</div>';}}
+ else if(x.ibw){var cal=ibwCalc();h=lab(x,cal?'<span class="unit">'+esc(T('auto','авто'))+'</span>':'')+'<div class="tw"><input type="text" data-num="1" inputmode="'+IMN()+'" autocomplete="off" data-k="'+x.k+'" id="ibwIn" value="'+esc(v)+'"'+(cal&&!v?' placeholder="'+cal+'"':'')+'><button class="now" data-ibwcalc="1">'+esc(T('Calc','Розрах.'))+'</button></div><div class="unit" id="ibwNote">'+esc(ibwNote())+'</div>';}
+ else if(x.t==='date'){h=lab(x)+'<div class="tw"><input type="date" data-k="'+x.k+'" value="'+esc(v)+'">'+(x.noToday?'':'<button class="now" data-today="'+x.k+'">'+esc(T('Today','Сьогодні'))+'</button>')+'</div>';}
+ else if(x.t==='num'){h=lab(x)+'<input type="text" data-num="1" inputmode="'+IMN()+'" autocomplete="off" data-k="'+x.k+'" value="'+esc(v)+'">';}
+ else{h=lab(x)+'<input type="text" data-k="'+x.k+'" value="'+esc(v)+'">';}
+ return '<div class="fld '+(x.w||'')+'">'+h+'</div>';}
+
+/* ---------- widgets ---------- */
+var TQS=[['RUE','R arm','П рука'],['LUE','L arm','Л рука'],['RLE','R leg','П нога'],['LLE','L leg','Л нога'],['JR','Junctional R','Вузловий П'],['JL','Junctional L','Вузловий Л'],['ABD','Abdominal','Абдомінальний']];
+function colName2(c){return {applied:T('Applied','Накладено'),converted:T('Converted','Конвертовано'),moved:T('Moved','Переміщено'),removed:T('Removed','Знято')}[c];}
+function tqName(k){for(var i=0;i<TQS.length;i++)if(TQS[i][0]===k)return T(TQS[i][1],TQS[i][2]);return k;}
+var medCat=[['anal','Analgesic','Анальгетик'],['abx','Antibiotic','Антибіотик'],['txa','TXA','ТXA'],['cry','Crystalloid / solution','Кристалоїд / розчин'],['blood','Blood / components','Кров / компоненти'],['plas','Dried plasma','Суха плазма'],['anes','Anesthesia drug','Препарат для знеболення'],['oth','Other','Інше']];
+var QP=[['Tranexamic acid','Транексамова кислота','txa','IV'],['Fentanyl','Фентаніл','anal','IN'],['Ketamine','Кетамін','anal','IV'],['Morphine','Морфін','anal','IM'],['Paracetamol','Парацетамол','anal','PO'],['Moxifloxacin','Моксифлоксацин','abx','PO'],['Ertapenem','Ертапенем','abx','IV'],['Cefazolin','Цефазолін','abx','IV'],['Whole blood','Цільна кров','blood','IV'],['Red cells','Еритроцитна маса','blood','IV'],['Plasma (FFP)','Плазма (СЗП)','blood','IV'],['Dried plasma','Суха плазма','plas','IV'],['Calcium','Кальцій','oth','IV'],['Ringer’s solution','Розчин Рінгера','cry','IV'],['NaCl 0.9%','NaCl 0,9%','cry','IV'],['Glucose 5%','Розчин глюкози 5%','cry','IV'],['Polarizing solution','Поляризуюча суміш','cry','IV'],['Tetanus toxoid','Правцевий анатоксин','oth','IM']];
+var ROUTES=['IV','IO','IM','IN','PO','SL','SC','INH','TOP'];
+var draft={med:{},vit:{},vent:{},st:{}};
+var bodyType='G';
+var BT=[['G','Gunshot','Вогнепальне'],['F','Fragment','Осколкове'],['B','Burn','Опік'],['L','Laceration','Рвана рана'],['X','Fracture','Перелом'],['A','Amputation','Ампутація'],['C','Contusion','Забій']];
+
+function widget(k){var r=R(),h='';
+ if(k==='tq'){h='<div class="tqg">';
+  TQS.forEach(function(s){var q=r.tq[s[0]]||{},live=q.applied&&!q.removed&&!q.converted;h+='<div class="tqc'+(live?' live':'')+'"><div class="tqh"><b>'+esc(T(s[1],s[2]))+'</b>'+(live?'<span class="tag red">'+elapsed(q.applied)+'</span>':'')+'<input type="text" placeholder="'+esc(T('Device (e.g. CAT, SOF-T)','Назва (напр. CAT, SOF-T)'))+'" data-tq="'+s[0]+'|name" value="'+esc(q.name)+'"></div><div class="tqt4">';
+   ['applied','converted','moved','removed'].forEach(function(c){h+='<div><div class="lab">'+esc(colName2(c))+'</div><div class="tw"><input type="text" data-time="1" inputmode="'+IMT()+'" placeholder="--:--" autocomplete="off" data-tq="'+s[0]+'|'+c+'" value="'+esc(q[c])+'"><button class="now" data-tqnow="'+s[0]+'|'+c+'">'+esc(T('Now','Зараз'))+'</button></div></div>';});h+='</div></div>';});
+  return h+'</div><div class="unit" style="margin-top:6px">'+esc(T('Converted = replaced by pressure dressing or other control. Moved = repositioned.','Конвертовано: замінено тиснучою пов’язкою тощо. Переміщено: накладено в іншому місці.'))+'</div>';}
+ if(k==='meds'){var d=draft.med;
+  h='<div class="card"><h3>'+esc(T('Quick pick','Швидкий вибір'))+'</h3><div class="qp">';QP.forEach(function(q,i){h+='<button class="chip" data-qp="'+i+'">'+esc(T(q[0],q[1]))+'</button>';});
+  h+='</div><div class="grid"><div class="fld w2"><div class="lab">'+esc(T('Name','Назва'))+'</div><input type="text" data-dm="name" value="'+esc(d.name)+'"></div>'+
+   '<div class="fld"><div class="lab">'+esc(T('Dose / volume','Доза / об’єм'))+'</div><input type="text" data-dm="dose" value="'+esc(d.dose)+'" placeholder="1 g, 50 mcg, 500 mL"></div>'+
+   '<div class="fld"><div class="lab">'+esc(T('Time','Час'))+'</div><div class="tw"><input type="text" data-time="1" inputmode="'+IMT()+'" placeholder="--:--" autocomplete="off" data-dm="time" value="'+esc(d.time)+'"><button class="now" data-dmnow="1">'+esc(T('Now','Зараз'))+'</button></div></div>'+
+   '<div class="fld full"><div class="lab">'+esc(T('Route','Шлях введення'))+'</div><div class="chips">';ROUTES.forEach(function(x){h+='<button class="chip'+(d.route===x?' on':'')+'" data-dmr="'+x+'">'+x+'</button>';});
+  h+='</div></div><div class="fld full"><div class="lab">'+esc(T('Category','Категорія'))+'</div><div class="chips">';medCat.forEach(function(c){h+='<button class="chip'+(d.cat===c[0]?' on':'')+'" data-dmc="'+c[0]+'">'+esc(T(c[1],c[2]))+'</button>';});
+  h+='</div></div>';
+  if(d.cat==='blood'||d.cat==='plas'){h+='<div class="fld"><div class="lab">'+esc(T('Unit group','Група одиниці'))+'</div><div class="chips">';[['O','0 (I)'],['A','A (II)'],['B','B (III)'],['AB','AB (IV)']].forEach(function(g){h+='<button class="chip'+(d.bg===g[0]?' on':'')+'" data-dmbg="'+g[0]+'">'+g[1]+'</button>';});
+   h+='</div></div><div class="fld"><div class="lab">'+esc(T('Unit Rh','Резус одиниці'))+'</div><div class="chips">';['+','−'].forEach(function(x){h+='<button class="chip'+(d.rh===x?' on':'')+'" data-dmrh="'+x+'">Rh '+x+'</button>';});
+   h+='</div></div><div class="fld"><div class="lab">'+esc(T('Unit / bag No.','№ одиниці / пакета'))+'</div><input type="text" data-dm="unitNo" value="'+esc(d.unitNo)+'"></div>';}
+  h+='</div><div class="row" style="margin-top:10px"><button class="act" data-addmed="1">+ '+esc(T('Add entry','Додати запис'))+'</button></div></div>';
+  h+='<table><tr><th>'+esc(T('Time','Час'))+'</th><th>'+esc(T('Role','Рів.'))+'</th><th>'+esc(T('Name','Назва'))+'</th><th>'+esc(T('Dose / vol','Доза / об’єм'))+'</th><th>'+esc(T('Route','Шлях'))+'</th><th>'+esc(T('Category','Категорія'))+'</th><th></th></tr>';
+  r.meds.slice().sort(tsort).forEach(function(m){h+='<tr><td>'+esc(m.time)+'</td><td>'+esc(m.role)+'</td><td>'+esc(m.name)+(m.bg||m.rh||m.unitNo?' <span class="unit">('+esc([m.bg,m.rh&&'Rh'+m.rh,m.unitNo&&'№'+m.unitNo].filter(Boolean).join(' '))+')</span>':'')+'</td><td>'+esc(m.dose)+'</td><td>'+esc(m.route)+'</td><td>'+esc(catName(m.cat))+'</td><td><button class="act del" data-delmed="'+m.id+'">✕</button></td></tr>';});
+  if(!r.meds.length)h+='<tr><td colspan="7" class="unit">'+esc(T('No entries yet.','Записів ще немає.'))+'</td></tr>';
+  return h+'</table>'+ftot();}
+ if(k==='vitals'){var v=draft.vit;var F=[['rr','RR','ЧД'],['spo2','SpO₂ %','SpO₂ %'],['hr','Pulse','Пульс'],['sbp','SBP','САТ'],['dbp','DBP','ДАТ'],['gcs','GCS','ШКГ'],['temp','T °C','T °C'],['urine','Urine mL','Діурез мл'],['ebl','Blood loss mL','Крововтрата мл']];
+  h='<div class="vin"><div><label>'+esc(T('Time','Час'))+'</label><div class="tw"><input type="text" data-time="1" inputmode="'+IMT()+'" placeholder="--:--" autocomplete="off" data-dv="time" value="'+esc(v.time)+'"></div><button class="now" style="width:100%;margin-top:4px" data-dvnow="1">'+esc(T('Now','Зараз'))+'</button></div>';
+  F.forEach(function(x){h+='<div><label>'+esc(T(x[1],x[2]))+'</label><input type="text" data-num="1" inputmode="'+IMN()+'" autocomplete="off" data-dv="'+x[0]+'" value="'+esc(v[x[0]])+'"></div>';});
+  h+='</div><div class="lab">AVPU</div><div class="chips" style="margin-bottom:8px">';[['A','A'],['V','V'],['P','P'],['U','U']].forEach(function(x){h+='<button class="chip'+(v.avpu===x[0]?' on':'')+'" data-dva="'+x[0]+'">'+x[1]+'</button>';});
+  h+='</div><div class="lab">'+esc(T('Pain (0-10)','Біль (0-10)'))+'</div><div class="chips" style="margin-bottom:10px">';for(var i=0;i<=10;i++)h+='<button class="chip'+(v.pain===String(i)?' on':'')+'" data-dvp="'+i+'">'+i+'</button>';
+  h+='</div><div class="lab">'+esc(T('Signs (003-3/о chart symbols)','Ознаки (умовні позначення 003-3/о)'))+'</div><div class="chips" style="margin-bottom:10px">';[O('x','x spontaneous breathing','x спонтанне дихання'),O('//','// assisted breathing','// допоміжне дихання'),O('П','П sweating','П потовиділення'),O('Ц','Ц cyanosis','Ц ціаноз'),O('С','С tearing','С сльозотеча'),O('СЛ','СЛ salivation','СЛ слинотеча')].forEach(function(o){var on=(v.signs||[]).indexOf(o[0])>=0;h+='<button class="chip'+(on?' on':'')+'" data-dvs="'+esc(o[0])+'">'+esc(T(o[1],o[2]))+'</button>';});
+  h+='</div><button class="act" data-addvit="1">+ '+esc(T('Add vital signs','Додати показники'))+'</button>';
+  h+='<table style="margin-top:12px"><tr><th>'+esc(T('Time','Час'))+'</th><th>'+esc(T('Role','Рів.'))+'</th><th>'+esc(T('RR','ЧД'))+'</th><th>SpO₂</th><th>'+esc(T('Pulse','Пульс'))+'</th><th>'+esc(T('BP','АТ'))+'</th><th>'+esc(T('GCS/AVPU','ШКГ/AVPU'))+'</th><th>'+esc(T('Pain','Біль'))+'</th><th>T</th><th>'+esc(T('Urine','Діурез'))+'</th><th>'+esc(T('Blood loss','Крововтрата'))+'</th><th>'+esc(T('Signs','Ознаки'))+'</th><th></th></tr>';
+  r.vitals.slice().sort(tsort).forEach(function(x){h+='<tr><td>'+esc(x.time)+'</td><td>'+esc(x.role)+'</td><td>'+esc(x.rr)+'</td><td>'+esc(x.spo2)+'</td><td>'+esc(x.hr)+'</td><td>'+esc((x.sbp||'')+(x.dbp?'/'+x.dbp:''))+'</td><td>'+esc([x.gcs,x.avpu].filter(Boolean).join(' / '))+'</td><td>'+esc(x.pain)+'</td><td>'+esc(x.temp)+'</td><td>'+esc(x.urine)+'</td><td>'+esc(x.ebl)+'</td><td>'+esc((x.signs||[]).join(' '))+'</td><td><button class="act del" data-delvit="'+x.id+'">✕</button></td></tr>';});
+  if(!r.vitals.length)h+='<tr><td colspan="13" class="unit">'+esc(T('No entries yet.','Записів ще немає.'))+'</td></tr>';
+  return h+'</table>';}
+ if(k==='vent'){var w=draft.vent;var F2=[['mode','Mode','Режим','text'],['rr','RR','ЧД'],['tv','TV mL','ДО мл'],['fio2','FiO₂','FiO₂'],['peep','PEEP','ПТКВ'],['pip','PIP','PIP'],['etco2','EtCO₂','EtCO₂'],['o2','O₂ L/min','Кисень л/хв'],['inh','Agent L/min','Анестетик л/хв']];
+  h='<div class="vin"><div><label>'+esc(T('Time','Час'))+'</label><input type="text" data-time="1" inputmode="'+IMT()+'" placeholder="--:--" autocomplete="off" data-dw="time" value="'+esc(w.time)+'"><button class="now" style="width:100%;margin-top:4px" data-dwnow="1">'+esc(T('Now','Зараз'))+'</button></div>';
+  F2.forEach(function(x){h+='<div><label>'+esc(T(x[1],x[2]))+'</label><input type="text"'+(x[3]?'':' data-num="1"')+' inputmode="'+(x[3]?'text':IMN())+'" autocomplete="off" data-dw="'+x[0]+'" value="'+esc(w[x[0]])+'"></div>';});
+  h+='</div><button class="act sec" data-addvent="1">+ '+esc(T('Add ventilator settings','Додати параметри ШВЛ'))+'</button><table style="margin-top:12px"><tr><th>'+esc(T('Time','Час'))+'</th><th>'+esc(T('Role','Рів.'))+'</th><th>'+esc(T('Mode','Режим'))+'</th><th>RR</th><th>TV</th><th>FiO₂</th><th>PEEP</th><th>PIP</th><th>EtCO₂</th><th>'+esc(T('O₂ L/min','O₂ л/хв'))+'</th><th>'+esc(T('Agent L/min','Анест. л/хв'))+'</th><th></th></tr>';
+  r.vent.slice().sort(tsort).forEach(function(x){h+='<tr><td>'+esc(x.time)+'</td><td>'+esc(x.role)+'</td><td>'+esc(x.mode)+'</td><td>'+esc(x.rr)+'</td><td>'+esc(x.tv)+'</td><td>'+esc(x.fio2)+'</td><td>'+esc(x.peep)+'</td><td>'+esc(x.pip)+'</td><td>'+esc(x.etco2)+'</td><td>'+esc(x.o2)+'</td><td>'+esc(x.inh)+'</td><td><button class="act del" data-delvent="'+x.id+'">✕</button></td></tr>';});
+  return h+'</table>';}
+ if(k==='stages'){var s=draft.st;h='<div class="lab">'+esc(T('Stages of operation / intra-op events','Етапи операції / події'))+'</div><div class="row"><div style="width:190px" class="tw"><input type="text" data-time="1" inputmode="'+IMT()+'" placeholder="--:--" autocomplete="off" data-ds="time" value="'+esc(s.time)+'"><button class="now" data-dsnow="1">'+esc(T('Now','Зараз'))+'</button></div><div style="flex:1;min-width:200px"><input type="text" data-ds="txt" value="'+esc(s.txt)+'" placeholder="'+esc(T('Incision, hemostasis, closure ...','Розріз, гемостаз, закриття ...'))+'"></div><button class="act sec" data-addst="1">+</button></div><table style="margin-top:8px">';
+  r.stages.slice().sort(tsort).forEach(function(x){h+='<tr><td style="width:70px">'+esc(x.time)+'</td><td>'+esc(x.txt)+'</td><td style="width:50px"><button class="act del" data-delst="'+x.id+'">✕</button></td></tr>';});return h+'</table>';}
+ if(k==='efast')return efWidget();
+ if(k==='body'){h='<div class="lab">'+esc(T('Marker type, then tap the figure. Tap a marker to remove it.','Оберіть тип позначки, потім торкніться схеми. Торкніться позначки, щоб видалити.'))+'</div><div class="chips" style="margin-bottom:8px">';
+  BT.forEach(function(b){h+='<button class="chip'+(bodyType===b[0]?' on':'')+'" data-bt="'+b[0]+'"><b>'+b[0]+'</b> '+esc(T(b[1],b[2]))+'</button>';});
+  h+='</div><div class="body">'+fig('front')+fig('back')+'</div>';return h;}
+ if(k==='bmi'){var f=r.f,b='';if(f.wt&&f.ht){var bm=f.wt/Math.pow(f.ht/100,2);b=bm.toFixed(1);var g=bm>=40?'IV':bm>=35?'III':bm>=30?'II':bm>=27?'I':'';if(g)b+=' · '+T('Obesity grade','Ожиріння ст.')+' '+g;}
+  return '<div class="lab">'+esc(T('BMI (auto)','ІМТ (авто)'))+'</div><div id="bmiOut" style="font-size:18px;padding:10px 0;font-weight:700">'+esc(b||'-')+'</div>';}
+ var SIGL={sig:['Signature, part 1 (draw)','Підпис, частина 1'],sig2:['Signature, part 2 (draw)','Підпис, частина 2'],sigAnes:['Anesthesiologist signature','Підпис анестезіолога'],sigNurse:['Anesthesia nurse signature','Підпис медсестри-анестезиста'],sigHead:['Head of department signature','Підпис завідувача відділення']};
+ if(SIGL[k]){return '<div class="lab">'+esc(T(SIGL[k][0],SIGL[k][1]))+'</div><canvas class="sigc" data-sigk="'+k+'" width="1040" height="300"></canvas><div class="row" style="margin-top:6px"><button class="act sec" data-sigclr="'+k+'">'+esc(T('Clear','Очистити'))+'</button></div>';}
+ if(k==='timeline')return timeline();
+ if(k==='vchart')return vchart();
+ if(k==='ftot')return ftot();
+ return '';}
+
+function fig(side){var r=R(),W=180,H=360;
+ var s='<svg viewBox="0 0 '+W+' '+H+'" width="'+W*1.25+'" height="'+H*1.25+'" data-side="'+side+'"><g fill="#E0E7EF" stroke="#8AA0B6" stroke-width="1.5">'+
+ '<circle cx="90" cy="32" r="22"/><rect x="80" y="54" width="20" height="12"/><rect x="55" y="66" width="70" height="110" rx="14"/>'+
+ '<rect x="28" y="70" width="22" height="120" rx="10"/><rect x="130" y="70" width="22" height="120" rx="10"/>'+
+ '<rect x="58" y="176" width="28" height="160" rx="11"/><rect x="94" y="176" width="28" height="160" rx="11"/></g>'+
+ '<text x="90" y="354" text-anchor="middle" font-size="12" fill="#5B6B7C">'+esc(side==='front'?T('FRONT','СПЕРЕДУ'):T('BACK','ЗЗАДУ'))+'</text>'+
+ '<text x="'+(side==='front'?14:166)+'" y="86" text-anchor="middle" font-size="11" fill="#5B6B7C">'+(side==='front'?T('R','П'):T('L','Л'))+'</text>';
+ r.body.forEach(function(m,i){if(m.side!==side)return;s+='<g data-bm="'+i+'"><circle cx="'+m.x+'" cy="'+m.y+'" r="9" fill="#B3261E"/><text class="mk" x="'+m.x+'" y="'+(m.y+4)+'" text-anchor="middle" fill="#fff">'+esc(m.type)+'</text></g>';});
+ return s+'</svg>';}
+
+function ftot(){var r=R(),T2={},ord=[];r.meds.forEach(function(m){if(['cry','blood','plas'].indexOf(m.cat)<0)return;var key=m.name;if(!T2[key]){T2[key]={ml:0,u:0,n:0,other:[]};ord.push(key);}var t=T2[key];t.n++;
+  var mm=String(m.dose||'').match(/([\d.,]+)\s*(ml|мл|l|л)\b/i);if(mm){var v=parseFloat(mm[1].replace(',','.'));t.ml+=/^(l|л)$/i.test(mm[2])?v*1000:v;return;}
+  var uu=String(m.dose||'').match(/([\d.,]+)\s*(unit|units|u|од|одиниц\S*|bag|bags|пакет\S*|доз\S*)/i);if(uu){t.u+=parseFloat(uu[1].replace(',','.'));return;}if(m.dose)t.other.push(m.dose);});
+ if(!ord.length)return '<div class="unit" style="margin-top:8px">'+esc(T('Fluid and blood totals appear here once crystalloids, blood or plasma are recorded.','Підсумки інфузій і крові з’являться після внесення розчинів, крові чи плазми.'))+'</div>';
+ var h='<table style="margin-top:12px"><tr><th>'+esc(T('Fluids and blood: totals (003-3/о)','Інфузії та кров: разом (003-3/о)'))+'</th><th>'+esc(T('Entries','Записів'))+'</th><th>'+esc(T('Total','Разом'))+'</th></tr>',ml=0;
+ ord.forEach(function(k){var t=T2[k];ml+=t.ml;h+='<tr><td>'+esc(k)+'</td><td>'+t.n+'</td><td>'+esc([t.ml?t.ml+' mL':'',t.u?t.u+' '+(t.u===1?T('unit','од.'):T('units','од.')):'',t.other.join(', ')].filter(Boolean).join(' + ')||'-')+'</td></tr>';});
+ return h+'<tr><td><b>'+esc(T('All volume entered in mL','Увесь об’єм у мл'))+'</b></td><td></td><td><b>'+ml+' mL</b></td></tr></table>';}
+function catName(c){for(var i=0;i<medCat.length;i++)if(medCat[i][0]===c)return T(medCat[i][1],medCat[i][2]);return c||'';}
+function tsort(a,b){return (a.time||'').localeCompare(b.time||'');}
+
+/* ---------- timeline ---------- */
+function events(){var r=R(),f=r.f,E=[];function add(t,role,txt){if(t)E.push({t:t,role:role||'',txt:txt});}
+ add(f.incTime,'',T('Injury / event','Подія / поранення'));
+ add(f.arrTime,r.role,T('Arrival at role','Прибуття на рівень'));
+ Object.keys(r.tq).forEach(function(k){var q=r.tq[k];['applied','converted','moved','removed'].forEach(function(c){var lbl={applied:T('applied','накладено'),converted:T('converted','конвертовано'),moved:T('moved','переміщено'),removed:T('removed','знято')}[c];add(q[c],'','TQ '+tqName(k)+' '+lbl+(q.name?' ('+q.name+')':''));});});
+ Object.keys(r.stamps).forEach(function(key){var s=r.stamps[key],p=key.split(':'),fd=findF(p[0]);if(!fd)return;var v=(f[p[0]]||[]);if(v.indexOf(p[1])<0)return;var o=fd.o.filter(function(o){return o[0]===p[1];})[0];add(s.t,s.role,T(fd.en,fd.ua)+': '+T(o[1],o[2]));});
+ r.meds.forEach(function(m){add(m.time,m.role,m.name+' '+(m.dose||'')+' '+(m.route||''));});
+ r.vitals.forEach(function(v){add(v.time,v.role,T('Vitals','Показники')+': '+[v.hr&&('HR '+v.hr),v.sbp&&('BP '+v.sbp+(v.dbp?'/'+v.dbp:'')),v.spo2&&('SpO₂ '+v.spo2),v.rr&&('RR '+v.rr),v.gcs&&('GCS '+v.gcs),v.avpu].filter(Boolean).join(', '));});
+ r.vent.forEach(function(v){add(v.time,v.role,T('Vent','ШВЛ')+': '+[v.mode,v.fio2&&'FiO₂ '+v.fio2,v.peep&&'PEEP '+v.peep].filter(Boolean).join(', '));});
+ add(f.opStart,'',T('Start of surgery','Початок операції'));add(f.opEnd,'',T('End of surgery','Кінець операції'));
+ r.stages.forEach(function(s){add(s.time,'',T('OR','Опер.')+': '+s.txt);});
+ add(f.cprStart,'',T('CPR start','СЛР початок'));add(f.cprEnd,'',T('CPR end','СЛР кінець'));add(f.deathTime,'',T('Death','Смерть'));
+ add(f.depTime,'',T('Departure','Вибуття')+(f.evTo?' → Role '+f.evTo:''));
+ add(f.depTime2,'',T('Departure from Role 2','Вибуття з Рівня 2')+(f.evTo2?' → Role '+f.evTo2:''));
+ add(f.arr2Time,'2',T('Arrival at Role 2','Прибуття на Рівень 2'));
+ (r.marks||[]).forEach(function(m){add(m.t,'','◆ '+m.txt);});
+ efSorted().forEach(function(e,i){add(e.time,e.role,'E-FAST #'+(i+1)+': '+efRes(e));});
+ E.sort(function(a,b){return a.t.localeCompare(b.t);});return E;}
+function findF(k){for(var i=0;i<S.length;i++)for(var j=0;j<S[i].g.length;j++)for(var m=0;m<S[i].g[j].f.length;m++)if(S[i].g[j].f[m].k===k)return S[i].g[j].f[m];return null;}
+function timeline(){var E=events(),h='<div class="card"><h3>'+esc(T('Export','Експорт'))+'</h3><div class="row">';
+ if(dl||!inClaude)h+='<button class="act" data-exp="json">'+esc(T('Download JSON (this casualty)','Завантажити JSON'))+'</button><button class="act" data-exp="csv">'+esc(T('Download CSV (all casualties)','Завантажити CSV (усі)'))+'</button><button class="act sec" data-exp="txt">'+esc(T('Download handover summary','Завантажити зведення'))+'</button>';
+ h+='<button class="act sec" data-exp="copy">'+esc(T('Copy JSON','Копіювати JSON'))+'</button></div><div class="unit" style="margin-top:6px">'+esc(db?T('Shared registry sync: on. Records also save to the course registry for after-action review.','Синхронізація з реєстром увімкнена.'):T('Records are stored on this device only.','Записи зберігаються лише на цьому пристрої.'))+'</div></div>';
+ h+='<div class="card"><h3>'+esc(T('Handover summary','Зведення для передачі'))+'</h3><pre style="white-space:pre-wrap;font-family:Arial;font-size:14px;margin:0">'+esc(summary())+'</pre></div>';
+ h+='<div class="card"><h3>'+esc(T('Timeline','Хронологія'))+'</h3><ul class="tl">';
+ E.forEach(function(e){h+='<li><span class="tm">'+esc(e.t)+'</span>'+(e.role?'<span class="rl">R'+esc(e.role)+'</span>':'<span></span>')+'<span>'+esc(e.txt)+'</span></li>';});
+ if(!E.length)h+='<li><span></span><span></span><span class="unit">'+esc(T('Timed entries appear here automatically.','Записи з часом з’являються тут автоматично.'))+'</span></li>';
+ h+='</ul></div>';var vv=R().voice||[];if(vv.length){h+='<div class="card"><h3>'+esc(T('Voice transcript','Голосовий транскрипт'))+' ('+vv.length+')</h3><ul class="tl">';vv.forEach(function(p){h+='<li><span class="tm">'+esc(p.t)+'</span><span class="rl">R'+esc(p.role)+'</span><span>'+esc(p.text)+'</span></li>';});h+='</ul></div>';}
+ return h;}
+function optTxt(x){var v=R().f[x.k];if(v==null||v===''||(Array.isArray(v)&&!v.length))return '';if(x.o){var a=Array.isArray(v)?v:[v];return a.map(function(z){var o=x.o.filter(function(o){return o[0]===z;})[0];return o?T(o[1],o[2]):z;}).join(', ');}return String(v)+(x.u?' '+x.u:'');}
+function summary(){var r=R(),out=[];S.forEach(function(s){if(s.id==='tl')return;var lines=[];s.g.forEach(function(g){g.f.forEach(function(x){if(x.t==='w')return;var t=optTxt(x);if(t)lines.push('  '+T(x.en,x.ua)+': '+t);});});
+  if(s.id==='care'){Object.keys(r.tq).forEach(function(k){var q=r.tq[k];if(q.applied||q.name)lines.push('  TQ '+tqName(k)+': '+[q.name,q.applied&&('on '+q.applied),q.converted&&('conv '+q.converted),q.moved&&('moved '+q.moved),q.removed&&('off '+q.removed)].filter(Boolean).join(', '));});}
+  if(s.id==='mech'&&r.body.length)lines.push('  '+T('Injury markers','Позначки')+': '+r.body.map(function(m){return m.type+'('+(m.side==='front'?T('F','П'):T('B','З'))+')';}).join(' '));
+  if(s.id==='meds')r.meds.slice().sort(tsort).forEach(function(m){lines.push('  '+m.time+' R'+m.role+' '+m.name+' '+(m.dose||'')+' '+(m.route||''));});
+  if(s.id==='vitals'){var lv=r.vitals.slice().sort(tsort).pop();if(lv)lines.push('  '+T('Last vitals','Останні показники')+' '+lv.time+': HR '+(lv.hr||'-')+', BP '+(lv.sbp||'-')+'/'+(lv.dbp||'-')+', SpO₂ '+(lv.spo2||'-')+', RR '+(lv.rr||'-')+', GCS '+(lv.gcs||'-')+(lv.avpu?' '+lv.avpu:''));}
+  if(s.id==='dx')efSorted().forEach(function(e,i){lines.push('  E-FAST #'+(i+1)+' '+(e.time||'--')+' R'+e.role+': '+efRes(e)+(e.by?' ('+e.by+')':''));});
+  if(lines.length)out.push(T(s.en,s.ua).toUpperCase()+'\n'+lines.join('\n'));});
+ return out.join('\n\n')||T('Nothing recorded yet.','Ще нічого не записано.');}
+
+/* ---------- render ---------- */
+function render(){header();nav();var h='';
+ S.forEach(function(s,si){h+='<section class="sec" id="s-'+s.id+'"><div class="sech"><h2>'+(si+1)+'. '+esc(T(s.en,s.ua))+'</h2></div><div class="srcl">'+esc(T('Source fields','Джерело'))+': '+esc(s.src)+'</div>';
+ if(s.id==='pt')h+='<div class="gap">'+esc(T('Items marked [confirm] carry abbreviations from the scanned 001/о that need a native-speaker check before use (Ц/В/П, triage colors, Б/С and М/С).','Позначені [confirm] поля потребують перевірки носієм мови (Ц/В/П, кольори сортування, Б/С та М/С).'))+'</div>';
+ s.g.forEach(function(g){h+='<div class="card">'+(g.en?'<h3>'+esc(T(g.en,g.ua))+'</h3>':'')+'<div class="grid">';g.f.forEach(function(x){h+=fld(x);});h+='</div></div>';});
+ h+='</section>';});
+ h+='<div class="foot">'+esc(T('STORM-2 training prototype built from Forms 001/о, 002/о (MoD Order No. 253, 18 Apr 2025) and 003-3/о (MoH Order No. 110, 14 Feb 2012). Not an official form. Ukrainian labels need native-speaker review.','Навчальний прототип STORM-2 на основі форм 001/о, 002/о та 003-3/о. Не є офіційною формою.'))+'</div>';
+ if(kpT)kpHide();var c=document.getElementById('content'),st=c.scrollTop;c.innerHTML=h;c.scrollTop=st;initSig();chartsToEnd();vpRender();document.getElementById('toTopL').textContent=T('Top','Вгору');}
+var jumping=0;
+function jump(id){var c=document.getElementById('content'),el=document.getElementById('s-'+id);if(!el)return;sec=id;nav();markNav();jumping=Date.now();c.scrollTop=el.offsetTop-4;}
+function spy(){if(Date.now()-jumping<300)return;var c=document.getElementById('content'),y=c.scrollTop+60,cur2=S[0].id;
+ S.forEach(function(s){var el=document.getElementById('s-'+s.id);if(el&&el.offsetTop<=y)cur2=s.id;});
+ if(c.scrollTop+c.clientHeight>=c.scrollHeight-4)cur2=S[S.length-1].id;
+ if(cur2!==sec){sec=cur2;markNav();}}
+function markNav(){var b=document.querySelector('nav button.on');if(b)b.classList.remove('on');var n=document.querySelector('nav button[data-sec="'+sec+'"]');if(n){n.classList.add('on');n.scrollIntoView({block:'nearest',inline:'nearest'});}}
+function soft(){header();nav();}
+
+/* ---------- events ---------- */
+document.addEventListener('click',function(e){var tp=e.target.closest('[data-tip]');if(tp){toast(tp.getAttribute('data-tip'));return;}
+ var b=e.target.closest('button,g[data-bm],svg[data-side]');if(!b)return;var d=b.dataset,r=R(),f=r.f;
+ if(b.tagName==='g'){r.body.splice(+d.bm,1);save();render();return;}
+ if(b.tagName==='svg'){var pt=b.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;var p=pt.matrixTransform(b.getScreenCTM().inverse());r.body.push({side:d.side,x:Math.round(p.x),y:Math.round(p.y),type:bodyType});save();render();return;}
+ if(d.agepick){agePick=agePick===d.agepick?null:d.agepick;render();if(agePick){var L2=document.getElementById('ageList'),sel=f[d.agepick],tgt=document.getElementById('age'+(sel||35));if(L2&&tgt)L2.scrollTop=tgt.offsetTop-(sel?100:0);}return;}
+ if(d.ageset!==undefined&&b.hasAttribute('data-ageset')){f.age=d.ageset;agePick=null;save();render();return;}
+ if(d.ibwcalc){f.ibwManual=false;syncIbw();save();render();return;}
+ if(d.sec){jump(d.sec);return;}
+ if(d.voice){startVoice();return;}
+ if(d.vptoggle||d.vpclose){V.panel=!V.panel;layout();header();return;}
+ if(d.vlang){V.lang=d.vlang;if(V.on){dict.stop().catch(function(){});}vpRender();return;}
+ if(d.ref){clk.ref+=+d.ref;vpRender();return;}
+ if(d.t0){var ph0={t:nowT(),ops:[]};var rr=R();rr.marks=rr.marks||[];rr.marks.push({id:uid(),t:ph0.t,txt:T('Time zero','Час нуль')});save();toast(T('Time zero marked ','Час нуль позначено ')+ph0.t);render();return;}
+ if(d.undo){var u=d.undo.split('|'),ph=findPh(u[0]);if(ph)undoOp(ph,+u[1]);return;}
+ if(d.ai){runAI();return;}
+ if(d.aistop){if(aiCtl)aiCtl.abort();return;}
+ if(b.id==='toTop'){jump(S[0].id);return;}
+ if(d.role){r.role=d.role;save();soft();return;}
+ if(b.id==='bLang'){L=L==='ua'?'en':'ua';document.documentElement.lang=L==='ua'?'uk':'en';try{localStorage.setItem(KEY+'_lang',L);}catch(x){}render();return;}
+ if(b.id==='bKp'){kpOn=!kpOn;try{localStorage.setItem(KEY+'_kp',kpOn?'1':'0');}catch(x){}kpHide();render();toast(kpOn?T('Touch keypad on','Сенсорна клавіатура ввімкнена'):T('Touch keypad off: device keyboard will be used','Сенсорну клавіатуру вимкнено'));return;}
+ if(b.id==='bFs'){var de=document.documentElement;try{if(document.fullscreenElement){document.exitFullscreen();}else{var pr=de.requestFullscreen&&de.requestFullscreen();if(pr&&pr.catch)pr.catch(function(){toast(T('Full screen blocked here. Press F11 or use the browser menu.','Повноекранний режим недоступний. Натисніть F11.'));});}}catch(x){toast(T('Full screen blocked here. Press F11.','Натисніть F11.'));}return;}
+ if(b.id==='bNew'){if(V.on){toast(T('Stop recording first','Спершу зупиніть запис'));return;}var n=blank();recs[n.id]=n;cur=n.id;sec='pt';save();render();document.getElementById('content').scrollTop=0;toast(T('New casualty started','Створено нового пораненого'));return;}
+ if(b.id==='bList'){showList();return;}
+ if(d.pick){if(V.on){toast(T('Stop recording first','Спершу зупиніть запис'));return;}cur=d.pick;closeList();sec='pt';save();render();document.getElementById('content').scrollTop=0;return;}
+ if(d.delrec){if(b.dataset.armed){delete recs[d.delrec];if(cur===d.delrec){var ks=Object.keys(recs);if(!ks.length){var nb=blank();recs[nb.id]=nb;ks=[nb.id];}cur=ks[0];}save();showList();render();}else{b.dataset.armed=1;b.textContent=T('Tap again to delete','Ще раз для видалення');}return;}
+ if(d.close){closeList();return;}
+ if(d.k&&d.k==='sex'){f.sex=f.sex===d.v?'':d.v;syncIbw();save();render();return;}
+ if(d.k){var x=findF(d.k);if(d.m==='1'){var a=(f[d.k]||[]).slice(),i=a.indexOf(d.v);if(i>=0){a.splice(i,1);delete r.stamps[d.k+':'+d.v];}else{a.push(d.v);if(x&&x.stamp)r.stamps[d.k+':'+d.v]={t:nowT(),role:r.role};}f[d.k]=a;}else{f[d.k]=f[d.k]===d.v?'':d.v;}save();render();return;}
+ if(d.now){f[d.now]=nowT();save();render();return;}
+ if(d.today){f[d.today]=today();save();render();return;}
+ if(d.tqnow){var q=d.tqnow.split('|');r.tq[q[0]]=r.tq[q[0]]||{};r.tq[q[0]][q[1]]=nowT();save();render();return;}
+ if(d.qp){var Q=QP[+d.qp];draft.med={name:T(Q[0],Q[1]),cat:Q[2],route:Q[3],time:nowT(),dose:''};render();var di=document.querySelector('[data-dm=dose]');if(di)di.focus();return;}
+ if(d.dmnow){draft.med.time=nowT();render();return;}
+ if(d.dmr){draft.med.route=draft.med.route===d.dmr?'':d.dmr;render();return;}
+ if(d.dmbg){draft.med.bg=draft.med.bg===d.dmbg?'':d.dmbg;render();return;}
+ if(d.dmrh){draft.med.rh=draft.med.rh===d.dmrh?'':d.dmrh;render();return;}
+ if(d.dmc){draft.med.cat=draft.med.cat===d.dmc?'':d.dmc;render();return;}
+ if(d.addmed){var m=draft.med;if(!m.name){toast(T('Enter a name','Вкажіть назву'));return;}r.meds.push({id:uid(),name:m.name,dose:m.dose||'',route:m.route||'',cat:m.cat||'',bg:m.bg||'',rh:m.rh||'',unitNo:m.unitNo||'',time:m.time||nowT(),role:r.role});draft.med={};save();render();toast(T('Added','Додано'));return;}
+ if(d.delmed){r.meds=r.meds.filter(function(m){return m.id!==d.delmed;});save();render();return;}
+ if(d.dvnow){draft.vit.time=nowT();render();return;}
+ if(d.dva){draft.vit.avpu=draft.vit.avpu===d.dva?'':d.dva;render();return;}
+ if(d.dvs){var sg=(draft.vit.signs||[]).slice(),ix=sg.indexOf(d.dvs);if(ix>=0)sg.splice(ix,1);else sg.push(d.dvs);draft.vit.signs=sg;render();return;}
+ if(d.dvp){draft.vit.pain=draft.vit.pain===d.dvp?'':d.dvp;render();return;}
+ if(d.addvit){var v=draft.vit;v.id=uid();v.time=v.time||nowT();v.role=r.role;r.vitals.push(v);draft.vit={};save();render();toast(T('Vitals added','Показники додано'));return;}
+ if(d.delvit){r.vitals=r.vitals.filter(function(x){return x.id!==d.delvit;});save();render();return;}
+ if(d.dwnow){draft.vent.time=nowT();render();return;}
+ if(d.addvent){var w=draft.vent;w.id=uid();w.time=w.time||nowT();w.role=r.role;r.vent.push(w);draft.vent={};save();render();return;}
+ if(d.delvent){r.vent=r.vent.filter(function(x){return x.id!==d.delvent;});save();render();return;}
+ if(d.dsnow){draft.st.time=nowT();render();return;}
+ if(d.addst){var s=draft.st;if(!s.txt)return;r.stages.push({id:uid(),time:s.time||nowT(),txt:s.txt});draft.st={};save();render();return;}
+ if(d.delst){r.stages=r.stages.filter(function(x){return x.id!==d.delst;});save();render();return;}
+ if(d.efnew){efNew();save();render();return;}
+ if(d.efint!=null&&d.efint!==undefined&&b.hasAttribute('data-efint')){r.efastInt=+d.efint;save();render();return;}
+ if(d.efdel){if(b.dataset.armed){r.efx=efx().filter(function(e){return e.id!==d.efdel;});save();render();}else{b.dataset.armed=1;b.textContent=T('Delete?','Видалити?');}return;}
+ if(d.efc){var q=d.efc.split('|'),ex=efx().filter(function(e){return e.id===q[0];})[0];if(ex){ex.z[q[1]]=ex.z[q[1]]===q[2]?'':q[2];save();render();}return;}
+ if(d.bt){bodyType=d.bt;render();return;}
+ if(d.sigclr){r.sigs=r.sigs||{};delete r.sigs[d.sigclr];save();initSig();return;}
+ if(d.mic){startDict(b,d.mic);return;}
+ if(d.exp){doExport(d.exp);return;}
+});
+document.addEventListener('input',function(e){var t=e.target,d=t.dataset,r=R();
+ if(d.k){r.f[d.k]=t.value;
+  if(d.k==='ht')syncIbw();if(d.k==='ibw')r.f.ibwManual=!!t.value;
+  if(d.k==='dob'){var ag=ageFromDob(t.value);if(ag){r.f.age=ag;var ab=document.querySelector('[data-agepick=age]');if(ab)ab.innerHTML=esc(ag)+' '+esc(T('yrs','р.'))+' <span>▾</span>';}}
+  if(d.k==='wt'||d.k==='ht')document.querySelectorAll('[data-k='+d.k+']').forEach(function(el){if(el!==t)el.value=t.value;});
+  save();if(/^(name|cardNo|allergyTxt|incTime|wt|ht)$/.test(d.k)){soft();if((d.k==='wt'||d.k==='ht')&&document.getElementById('bmiOut')){var tmp=document.createElement('div');tmp.innerHTML=widget('bmi');document.getElementById('bmiOut').textContent=tmp.querySelector('#bmiOut').textContent;}}return;}
+ if(d.tq){var q=d.tq.split('|');r.tq[q[0]]=r.tq[q[0]]||{};r.tq[q[0]][q[1]]=t.value;save();soft();return;}
+ if(d.eft){var q2=d.eft.split('|'),ex2=efx().filter(function(e){return e.id===q2[0];})[0];if(ex2){ex2[q2[1]]=t.value;save();soft();}return;}
+ if(d.dm){draft.med[d.dm]=t.value;return;}
+ if(d.dv){draft.vit[d.dv]=t.value;return;}
+ if(d.dw){draft.vent[d.dw]=t.value;return;}
+ if(d.ds){draft.st[d.ds]=t.value;return;}
+});
+
+/* ---------- list modal ---------- */
+function showList(){var h='<div class="row" style="justify-content:space-between;margin-bottom:10px"><h2 style="margin:0">'+esc(T('Casualties on this device','Поранені на цьому пристрої'))+'</h2><button class="act sec" data-close="1">'+esc(T('Close','Закрити'))+'</button></div><div class="plist">';
+ Object.keys(recs).map(function(k){return recs[k];}).sort(function(a,b){return (b.updated||b.created).localeCompare(a.updated||a.created);}).forEach(function(r){
+  h+='<div class="row" style="flex-wrap:nowrap"><button class="'+(r.id===cur?'cur':'')+'" data-pick="'+r.id+'" style="flex:1"><span><b>'+esc(r.f.name||T('Unnamed','Без імені'))+'</b> '+(r.f.cardNo?'№ '+esc(r.f.cardNo):'')+'<br><span class="unit">'+esc(T('Role','Рівень'))+' '+esc(r.role)+' · '+esc((r.updated||r.created).slice(0,16).replace('T',' '))+'</span></span><span class="unit">'+r.meds.length+' '+esc(T('meds','ліки'))+' · '+r.vitals.length+' '+esc(T('vitals','показн.'))+'</span></button><button class="act del" data-delrec="'+r.id+'">'+esc(T('Delete','Видалити'))+'</button></div>';});
+ document.getElementById('mListBox').innerHTML=h+'</div>';document.getElementById('mList').classList.add('show');}
+function closeList(){document.getElementById('mList').classList.remove('show');}
+document.getElementById('mList').addEventListener('click',function(e){if(e.target.id==='mList')closeList();});
+
+/* ---------- signature ---------- */
+function initSig(){document.querySelectorAll('canvas.sigc').forEach(sigPad);}
+function sigPad(c){var k=c.dataset.sigk,x=c.getContext('2d'),r=R();r.sigs=r.sigs||{};x.clearRect(0,0,c.width,c.height);x.lineWidth=4;x.lineCap='round';x.strokeStyle='#1C2B3A';
+ if(r.sigs[k]){var im=new Image();im.onload=function(){x.drawImage(im,0,0);};im.src=r.sigs[k];}
+ var dn=false;function P(e){var b=c.getBoundingClientRect();return [(e.clientX-b.left)*c.width/b.width,(e.clientY-b.top)*c.height/b.height];}
+ c.onpointerdown=function(e){dn=true;c.setPointerCapture(e.pointerId);var p=P(e);x.beginPath();x.moveTo(p[0],p[1]);};
+ c.onpointermove=function(e){if(!dn)return;var p=P(e);x.lineTo(p[0],p[1]);x.stroke();};
+ c.onpointerup=function(){if(!dn)return;dn=false;r.sigs[k]=c.toDataURL('image/png');save();};}
+
+
+/* ---------- touch keypad ---------- */
+var kpOn=(function(){try{var v=localStorage.getItem(KEY+'_kp');if(v)return v==='1';}catch(e){}return !!(window.matchMedia&&matchMedia('(pointer: coarse)').matches)||('ontouchstart' in window)||navigator.maxTouchPoints>0;})();
+function IMN(){return kpOn?'none':'decimal';}
+function IMT(){return kpOn?'none':'numeric';}
+var kpT=null,kpBuf=null;
+function kpTargets(){return [].slice.call(document.querySelectorAll('#content input[data-num],#content input[data-time]')).filter(function(e){return e.offsetParent!==null;});}
+function kpLabel(el){var f=el.closest('.fld,.vin > div,.tqt4 > div,td,th,.row');var l=f&&f.querySelector('.lab,label');var t=l?l.textContent:'';var tq=el.closest('.tqc');if(tq)t=tq.querySelector('b').textContent+': '+t;return t.trim();}
+function kpShow(el){kpT=el;kpBuf=null;var isT=!!el.dataset.time,h='<div class="kpb"><div class="kph"><span class="kpl">'+esc(kpLabel(el))+'</span><span class="kpv" id="kpv">'+esc(el.value||(isT?'--:--':''))+'</span></div>';
+ if(isT)h+='<div class="kpr">'+[['now',T('Now','Зараз')],['-60','−1 '+T('min','хв')],['-300','−5 '+T('min','хв')],['-900','−15 '+T('min','хв')],['60','+1 '+T('min','хв')]].map(function(b){return '<button data-kpq="'+b[0]+'">'+b[1]+'</button>';}).join('')+'</div>';
+ var keys=isT?['7','8','9','⌫','4','5','6','C','1','2','3','','◀','0','▶','✓']:['7','8','9','⌫','4','5','6','C','1','2','3','.','◀','0','▶','✓'];
+ h+='<div class="kpg">'+keys.map(function(k){var lab=k==='◀'?'◀ '+T('Prev','Назад'):k==='▶'?T('Next','Далі')+' ▶':k==='✓'?T('Done','Готово'):k==='C'?T('Clear','Очист.'):k;return k===''?'<span></span>':'<button data-kp="'+k+'" class="'+(k==='✓'?'kpd':k==='▶'||k==='◀'?'kpn':'')+'">'+esc(lab)+'</button>';}).join('')+'</div></div>';
+ var kpe=document.getElementById('kp');kpe.innerHTML=h;kpe.classList.add('show');document.getElementById('app').classList.add('kpo');
+ setTimeout(function(){if(kpT)kpT.scrollIntoView({block:'center'});},30);}
+function kpHide(){if(kpT&&kpT.dataset.time)normTime(kpT);kpT=null;var kpe=document.getElementById('kp');kpe.classList.remove('show');kpe.innerHTML='';document.getElementById('app').classList.remove('kpo');}
+function kpSet(v){if(!kpT)return;kpT.value=v;kpT.dispatchEvent(new Event('input',{bubbles:true}));var d=document.getElementById('kpv');if(d)d.textContent=v||(kpT.dataset.time?'--:--':'');}
+function fmtT(dg){dg=dg.slice(0,6);if(dg.length<=2)return dg;if(dg.length<=4)return dg.slice(0,2)+':'+dg.slice(2);return dg.slice(0,2)+':'+dg.slice(2,4)+':'+dg.slice(4);}
+function validT(v){var m=/^(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(v);return !!m&&+m[1]<24&&+m[2]<60&&(!m[3]||+m[3]<60);}
+function normTime(el){var v=(el.value||'').trim();if(!v)return;if(/^\d{3,6}$/.test(v)){if(v.length===3)v='0'+v;if(v.length===5)v='0'+v;v=fmtT(v);}else if(/^\d{1,2}:\d{2}(:\d{2})?$/.test(v)&&v.indexOf(':')===1)v='0'+v;
+ if(v!==el.value){el.value=v;el.dispatchEvent(new Event('input',{bubbles:true}));}if(!validT(v))el.classList.add('bad');else el.classList.remove('bad');}
+function kpMove(dir){var L=kpTargets(),i=L.indexOf(kpT);if(kpT&&kpT.dataset.time)normTime(kpT);var n=L[i+dir];if(n){n.focus({preventScroll:true});kpShow(n);}else kpHide();}
+function kpKey(k){if(!kpT)return;var isT=!!kpT.dataset.time,v=kpT.value||'';
+ if(k==='✓'){if(isT&&v&&!validT(fmtT(v.replace(/\D/g,'')))&&!validT(v)){toast(T('Enter a time as HH:MM','Введіть час як ГГ:ХХ'));return;}kpT.blur();kpHide();soft();return;}
+ if(k==='▶'){kpMove(1);return;}if(k==='◀'){kpMove(-1);return;}
+ if(k==='C'){kpBuf='';kpSet('');return;}
+ if(isT){if(kpBuf===null)kpBuf='';if(k==='⌫')kpBuf=kpBuf.slice(0,-1);else if(/\d/.test(k)&&kpBuf.length<6)kpBuf+=k;kpSet(fmtT(kpBuf));return;}
+ if(kpBuf===null){kpBuf='';v='';}
+ if(k==='⌫')v=v.slice(0,-1);else if(k==='.'){if(v.indexOf('.')<0)v=(v||'0')+'.';}else v=v+k;kpBuf=v;kpSet(v);}
+function kpQuick(q){if(!kpT)return;var base;if(q==='now'){kpSet(nowT());kpBuf=null;return;}var cur=validT(kpT.value)?tsec(kpT.value):tsec(nowT());var t=(cur+(+q)+86400)%86400;kpSet(hms2(t));kpBuf=null;}
+document.addEventListener('focusin',function(e){var t=e.target;if(!t.matches)return;if(t.matches('#content input[data-num],#content input[data-time]')){if(kpOn)kpShow(t);}else if(t.matches('input,textarea,select'))kpHide();});
+document.addEventListener('focusout',function(e){var t=e.target;if(t.matches&&t.matches('input[data-time]')&&!kpOn)normTime(t);});
+document.addEventListener('keydown',function(e){if(kpT&&e.target===kpT&&e.key.length===1)kpHide();});
+document.addEventListener('pointerdown',function(e){var k=e.target.closest('#kp button');if(k){e.preventDefault();if(k.dataset.kp)kpKey(k.dataset.kp);else if(k.dataset.kpq)kpQuick(k.dataset.kpq);return;}
+ if(kpT&&!e.target.closest('#kp')&&!e.target.closest('input[data-num],input[data-time]'))kpHide();},true);
+
+/* ---------- clock ---------- */
+var clk={srv:null,state:'unk',ref:0};
+function nowMs(){return Date.now()+(clk.applied?clk.srv:0)+clk.ref*1000;}
+function hms(ms){var d=new Date(ms);return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());}
+function checkClock(){if(clk.state==='checking')return;clk.state='checking';var t0=Date.now();
+ fetch(location.href,{method:'HEAD',cache:'no-store'}).then(function(res){var t1=Date.now(),dh=res.headers.get('date');if(!dh)throw 0;
+  var sv=Date.parse(dh)+500;clk.srv=Math.round(sv-(t0+t1)/2);clk.rtt=t1-t0;clk.applied=Math.abs(clk.srv)>2000;clk.state='ok';vpRender();})
+ .catch(function(){clk.state='fail';vpRender();});}
+
+/* ---------- voice state ---------- */
+var V={on:false,state:'idle',p0:null,partial:'',lang:null,panel:false,msg:'',ai:null,aiMsg:'',t0:0};
+var dictMode=null,wakeL=null;
+function vlang(){return V.lang||(L==='ua'?'uk':'en');}
+
+function startVoice(){
+ if(!dict){toast(T('Voice capture needs Chrome or the Claude desktop app','Голосовий запис потребує Chrome або застосунку Claude'));V.panel=true;layout();return;}
+ if(dictMode==='voice'&&V.on){dict.stop().catch(function(){});return;}
+ if(dictMode==='field'){toast(T('Stop field dictation first','Спершу зупиніть диктування в полі'));return;}
+ dictMode='voice';V.on=true;V.msg='';V.p0=null;V.partial='';if(!V.t0)V.t0=nowMs();
+ var p=dict.start({language:vlang()});
+ try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(function(l){wakeL=l;}).catch(function(){});}catch(e){}
+ p.catch(function(er){V.on=false;dictMode=null;V.msg=er&&er.code||'error';header();vpRender();});
+ V.panel=true;layout();header();vpRender();if(clk.state==='unk')checkClock();}
+
+/* field-level dictation (mic on text boxes) */
+var dictKey=null,dictBase='';
+function startDict(btn,k){if(!dict)return;if(dictMode==='voice'){toast(T('Voice capture is running','Йде голосовий запис'));return;}
+ if(dictMode==='field'){var was=dictKey;dict.stop().catch(function(){});if(was===k)return;}
+ dictMode='field';dictKey=k;var ta=document.querySelector('textarea[data-k="'+k+'"]');dictBase=ta?ta.value:'';
+ dict.start({language:vlang()}).catch(function(){dictMode=null;dictKey=null;toast(T('Dictation not available','Диктування недоступне'));resetMics();});
+ btn.classList.add('live');btn.textContent='■ '+T('Stop','Стоп');}
+function resetMics(){document.querySelectorAll('.mic.live').forEach(function(b){b.classList.remove('live');b.textContent='🎙 '+T('Dictate','Диктувати');});}
+
+function wireDict(){
+ dict.onPartial(function(o){if(!o.text)return;if(V.p0==null)V.p0=nowMs();
+  if(dictMode==='voice'){V.partial=o.text;var el=document.getElementById('vpLive');if(el)el.textContent=o.text;}
+  else if(dictMode==='field'&&dictKey){var ta=document.querySelector('textarea[data-k="'+dictKey+'"]');if(ta)ta.value=(dictBase?dictBase+' ':'')+o.text.trim();}});
+ dict.onFinal(function(o){var txt=(o.text||'').trim();var ms=V.p0!=null?V.p0:nowMs();V.p0=null;if(!txt)return;
+  if(dictMode==='voice'){V.partial='';addPhrase(txt,ms);}
+  else if(dictMode==='field'&&dictKey){dictBase=(dictBase?dictBase+' ':'')+txt;R().f[dictKey]=dictBase;var ta=document.querySelector('textarea[data-k="'+dictKey+'"]');if(ta)ta.value=dictBase;save();}});
+ dict.onState(function(o){V.state=o.state;if(o.state==='idle'){
+   if(dictMode==='voice'){V.on=false;V.msg=o.reason||'';V.partial='';if(wakeL){try{wakeL.release();}catch(e){}wakeL=null;}}
+   dictMode=null;dictKey=null;resetMics();header();vpRender();}});}
+
+/* ---------- phrases ---------- */
+function addPhrase(txt,ms){var r=R();r.voice=r.voice||[];
+ var ph={id:uid(),n:r.voice.length+1,ms:ms,t:hms(ms),iso:new Date(ms).toISOString(),text:txt,role:r.role,ops:[],ai:false};
+ r.voice.push(ph);try{parsePhrase(ph);}catch(e){}save();
+ var c=document.getElementById('content');if(c&&c.contains(document.activeElement))soft();else render();}
+function findPh(id){var v=R().voice||[];for(var i=0;i<v.length;i++)if(v[i].id===id)return v[i];return null;}
+
+/* ---------- ops (each one undoable) ---------- */
+function opSet(ph,k,v,d){var f=R().f,prev=f[k]==null?'':f[k];if(prev===v)return;f[k]=v;ph.ops.push({kind:'f',k:k,v:v,prev:prev,d:d});}
+function opSetIfEmpty(ph,k,v,d){if(!R().f[k])opSet(ph,k,v,d);}
+function opAdd(ph,k,v,d,t){var r=R(),a=(r.f[k]||[]).slice();if(a.indexOf(v)>=0)return;a.push(v);r.f[k]=a;var x=findF(k);if(x&&x.stamp)r.stamps[k+':'+v]={t:t||ph.t,role:ph.role,src:'voice'};ph.ops.push({kind:'m',k:k,v:v,d:d});}
+function opTq(ph,site,col,name,t){var r=R();r.tq[site]=r.tq[site]||{};var q=r.tq[site],prev=q[col]||'',pn=q.name||'';q[col]=t||ph.t;if(name&&!q.name)q.name=name;
+ ph.ops.push({kind:'tq',site:site,col:col,prev:prev,pn:pn,d:'TQ '+tqName(site)+' '+colName(col)+(t?' @'+t:'')});}
+function colName(c){return {applied:T('on','накладено'),converted:T('converted','конвертовано'),moved:T('moved','переміщено'),removed:T('off','знято')}[c]||c;}
+function opMed(ph,m){m.id=uid();m.time=ph.t;m.role=ph.role;m.src='voice';R().meds.push(m);ph.ops.push({kind:'med',id:m.id,d:[m.name,m.dose,m.route].filter(Boolean).join(' ')});}
+var VK=['hr','sbp','dbp','spo2','rr','gcs','avpu','pain','temp','urine','ebl'];
+function vdesc(v){return [v.hr&&'HR '+v.hr,v.sbp&&'BP '+v.sbp+(v.dbp?'/'+v.dbp:''),v.spo2&&'SpO₂ '+v.spo2,v.rr&&'RR '+v.rr,v.gcs&&'GCS '+v.gcs,v.avpu&&'AVPU '+v.avpu,v.pain!=null&&v.pain!==''&&(T('Pain ','Біль ')+v.pain),v.temp&&'T '+v.temp,v.urine&&T('Urine ','Діурез ')+v.urine,v.ebl&&T('Blood loss ','Крововтрата ')+v.ebl].filter(Boolean).join(', ');}
+function opVit(ph,v){var r=R(),keys=VK.filter(function(k){return v[k]!=null&&v[k]!=='';});if(!keys.length)return;
+ var last=null;for(var i=r.vitals.length-1;i>=0;i--)if(r.vitals[i].src==='voice'){last=r.vitals[i];break;}
+ if(last&&Math.abs(ph.ms-(last.ms||0))<60000&&keys.every(function(k){return last[k]==null||last[k]==='';})){keys.forEach(function(k){last[k]=String(v[k]);});ph.ops.push({kind:'vitm',id:last.id,keys:keys,d:vdesc(v)});}
+ else{var e={id:uid(),time:ph.t,ms:ph.ms,role:ph.role,src:'voice'};keys.forEach(function(k){e[k]=String(v[k]);});r.vitals.push(e);ph.ops.push({kind:'vit',id:e.id,d:vdesc(v)});}}
+function opEf(ph,z,v){var L=efSorted(),ex=null,created=false;for(var i=L.length-1;i>=0;i--){if(L[i].time&&Math.abs(tsec(L[i].time)-tsec(ph.t))<=600){ex=L[i];break;}}
+ if(!ex){ex=efNew(ph.t,ph.role);created=true;}var prev=ex.z[z]||'';if(prev===v&&!created)return;ex.z[z]=v;ph.ops.push({kind:'ef',ex:ex.id,z:z,prev:prev,created:created,d:'E-FAST '+z.toUpperCase()+' '+(v==='-'?T('− now','− зараз'):v)});}
+function opVent(ph,w){var e={id:uid(),time:ph.t,role:ph.role,src:'voice'};['mode','rr','tv','fio2','peep','pip','etco2','o2','inh'].forEach(function(k){if(w[k]!=null&&w[k]!=='')e[k]=String(w[k]);});R().vent.push(e);ph.ops.push({kind:'vent',id:e.id,d:T('Vent','ШВЛ')+' '+[e.mode,e.fio2&&'FiO₂ '+e.fio2,e.peep&&'PEEP '+e.peep,e.tv&&'TV '+e.tv].filter(Boolean).join(', ')});}
+function opStage(ph,txt){var e={id:uid(),time:ph.t,txt:txt,src:'voice'};R().stages.push(e);ph.ops.push({kind:'st',id:e.id,d:T('OR: ','Опер.: ')+txt});}
+function opMark(ph,txt){var r=R();r.marks=r.marks||[];var e={id:uid(),t:ph.t,txt:txt};r.marks.push(e);ph.ops.push({kind:'mark',id:e.id,d:txt});}
+function undoOp(ph,i){var o=ph.ops[i],r=R();if(!o)return;
+ if(o.kind==='f')r.f[o.k]=o.prev;
+ else if(o.kind==='m'){r.f[o.k]=(r.f[o.k]||[]).filter(function(x){return x!==o.v;});delete r.stamps[o.k+':'+o.v];}
+ else if(o.kind==='tq'){if(r.tq[o.site]){r.tq[o.site][o.col]=o.prev;r.tq[o.site].name=o.pn;}}
+ else if(o.kind==='med')r.meds=r.meds.filter(function(x){return x.id!==o.id;});
+ else if(o.kind==='vit')r.vitals=r.vitals.filter(function(x){return x.id!==o.id;});
+ else if(o.kind==='vitm'){r.vitals.forEach(function(x){if(x.id===o.id)o.keys.forEach(function(k){delete x[k];});});}
+ else if(o.kind==='ef'){var ex=efx().filter(function(e){return e.id===o.ex;})[0];if(ex){ex.z[o.z]=o.prev;if(o.created&&!EFZ.some(function(z){return ex.z[z[0]];}))r.efx=efx().filter(function(e){return e.id!==o.ex;});}}
+ else if(o.kind==='vent')r.vent=r.vent.filter(function(x){return x.id!==o.id;});
+ else if(o.kind==='st')r.stages=r.stages.filter(function(x){return x.id!==o.id;});
+ else if(o.kind==='mark')r.marks=(r.marks||[]).filter(function(x){return x.id!==o.id;});
+ ph.ops.splice(i,1);save();render();}
+
+/* ---------- live rule parser (EN + UA) ---------- */
+var CY='a-z0-9а-яіїєґ\'';
+function has(s,alts){return new RegExp('(?:^|[^'+CY+'])(?:'+alts+')','i').test(s);}
+function hasW(s,alts){return new RegExp('(?:^|[^'+CY+'])(?:'+alts+')(?=[^'+CY+']|$)','i').test(s);}
+function num(s,alts,gap,re){var m=s.match(new RegExp('(?:'+alts+')[^\\d]{0,'+(gap||12)+'}('+(re||'\\d+(?:\\.\\d+)?')+')','i'));return m?m[1]:null;}
+function sideOf(s){var r=hasW(s,'right|правий|права|праве|правої|правого|правій|правою|праву|справа|r'),l=hasW(s,'left|лівий|ліва|ліве|лівої|лівого|лівій|лівою|ліву|зліва|l');return r&&!l?'R':l&&!r?'L':'';}
+function rng(v,a,b){v=parseFloat(v);return isNaN(v)||v<a||v>b?null:v;}
+var NEG='no|not|hold|don\'t|without|negative for|не|без|ні|немає|нема';
+var WN={one:'1',two:'2',three:'3',four:'4',five:'5',half:'0.5','один':'1','одна':'1','одну':'1','одного':'1','два':'2','дві':'2','двох':'2','три':'3','чотири':'4','п\'ять':'5'};
+function wordsToNum(s){return s.replace(new RegExp('(^|[^'+CY+'])('+Object.keys(WN).join('|')+')(?=[^'+CY+']|$)','gi'),function(m,a,w){return a+WN[w.toLowerCase()];});}
+function norm(s){s=' '+s.toLowerCase().replace(/[’ʼ`]/g,'\'').replace(/(\d),(\d)/g,'$1.$2')+' ';return wordsToNum(s);}
+function spokenTime(s){var m=s.match(/(?:at|about|о|об|в|у)\s*(\d{1,2})[:.\s]?(\d{2})(?!\d)/);if(!m)return null;var h=+m[1],mi=+m[2];if(h>23||mi>59)return null;return pad(h)+':'+pad(mi)+':00';}
+
+var MEDRX=[['tranexamic|txa|транексам|тха',0],['fentanyl|фентаніл',1],['ketamine|кетамін',2],['morphine|морфін',3],['paracetamol|acetaminophen|tylenol|парацетамол',4],['moxifloxacin|moxi|моксифлокс',5],['ertapenem|ертапенем',6],['cefazolin|ancef|цефазолін',7],['whole blood|ltowb|цільн\\S* кров',8],['red cells|prbc|packed red|еритроцит',9],['dried plasma|freeze.?dried|суха плазма|сухої плазми|ліофіліз',11],['ffp|fresh frozen|plasma|плазм',10],['calcium|кальц',12],['ringer|рінгер',13],['saline|nacl|фізрозчин|натрію хлорид',14],['glucose|dextrose|глюкоз',15],['tetanus|правц',17]];
+var DOSE_RX=/(\d+(?:\.\d+)?)\s*(mcg|µg|micrograms?|mg|milligrams?|grams?|g|ml|mls|milliliters?|units?|u|мкг|мг|грам\S*|г|мл|одиниц\S*|доз\S*|пакет\S*|bags?)(?=[^a-zа-яіїєґ]|$)/i;
+var UNIT={mcg:'mcg','µg':'mcg',microgram:'mcg',micrograms:'mcg',mg:'mg',milligram:'mg',milligrams:'mg',g:'g',gram:'g',grams:'g',ml:'mL',mls:'mL',milliliter:'mL',milliliters:'mL',unit:'unit',units:'units',u:'unit','мкг':'mcg','мг':'mg','г':'g','мл':'mL',bag:'bag',bags:'bags'};
+function unitOf(u){u=u.toLowerCase();if(UNIT[u])return UNIT[u];if(/^грам/.test(u))return 'g';if(/^одиниц/.test(u))return 'од';if(/^доз/.test(u))return 'доза';if(/^пакет/.test(u))return 'пакет';return u;}
+function routeOf(s){if(hasW(s,'iv|intravenous\\S*|внутрішньовенн\\S*|в/в'))return 'IV';if(hasW(s,'io|intraosseous|внутрішньокістков\\S*|в/к'))return 'IO';if(hasW(s,'im|intramuscular\\S*|внутрішньом\'язов\\S*|в/м'))return 'IM';if(hasW(s,'in|intranasal\\S*|інтраназальн\\S*|в ніс'))return 'IN';if(hasW(s,'po|oral\\S*|by mouth|перорально|всередину'))return 'PO';return '';}
+
+var PROC=[
+['needle decompress|needle d|needle thoracostomy|decompressed|голков\\S* декомпрес|декомпрес','ndc','side',T('Needle decompression','Голкова декомпресія')],
+['chest seal|occlusive|оклюзійн','cseal','side',T('Chest seal','Оклюзійна пов’язка')],
+['finger thoracostomy|chest tube|thoracostomy|торакостом|торакоцентез|плевральн\\S* дренаж','thor','side',T('Thoracostomy','Торакоцентез')],
+['npa|nasopharyngeal|nasal airway|носоглотков|нфп','aw','npa','NPA'],
+['opa|oropharyngeal|ротоглотков|офп','aw','opa','OPA'],
+['sga|i-?gel|supraglottic|laryngeal mask|lma|надгортанн|ларингеальн\\S* маск|нгп','aw','sga','SGA'],
+['intubat|ett|endotracheal|tube is in|інтубов|інтубац|заінтуб|ендотрахеальн','aw','ett','ETT'],
+['cric|cricothyr|surgical airway|конікотом|крикотиреотом','aw','cric',T('Cric','Конікотомія')],
+['bag.?valve|bvm|bagging|амбу','resp','bvm','BVM'],
+['on the vent|ventilator|вентилятор|на швл|апарат\\S* швл','resp','vent',T('Ventilator','ШВЛ')],
+['intraosseous|io (?:in|placed|access|established)|внутрішньокістков\\S* (?:доступ|голк)|ez-?io|fast1','access','io','IO'],
+['iv (?:in|placed|access|established|line)|peripheral (?:iv|line)|периферичн\\S* (?:катетер|доступ)|венозн\\S* доступ|поставили катетер','access','piv','PIV'],
+['central line|cvc|центральн\\S* (?:вен|катетер|доступ)','access','cvc','CVC'],
+['arterial line|art line|артеріальн\\S* (?:лінія|катетер|доступ)','access','art',T('Arterial line','Артеріальний доступ')],
+['pelvic binder|binder|тазов\\S* (?:бандаж|пояс)|бандаж','immob','pel',T('Pelvic binder','Тазовий бандаж')],
+['c-?collar|cervical collar|шийн\\S* комір|комір','immob','cs',T('C-collar','Шийний комір')],
+['hypothermia|blanket|hpmk|ready-?heat|warmer|гіпотерм|ковдр|зігрів','hypo','?',T('Hypothermia prevention','Профілактика гіпотермії')],
+['wound pack|packed|packing|тампонад|затампонув','hem','pack',T('Packing','Тампонада')],
+['pressure dressing|israeli|тиснуч|компресійн\\S* пов','hem','press',T('Pressure dressing','Тиснуча пов’язка')],
+['hemostatic|combat gauze|celox|quikclot|гемостатич|целокс','hem','hemo',T('Hemostatic dressing','Гемостатична пов’язка')],
+['eye shield|щиток','eye','side',T('Eye shield','Щиток')],
+['foley|urinary catheter|сечов\\S* катетер','misc','foley',T('Urinary catheter','Сечовий катетер')],
+['(?:ng|og|gastric|orogastric|nasogastric) tube|шлунков\\S* зонд|назогастральн','misc','ngt',T('Gastric tube','Шлунковий зонд')],
+['reboa','misc','reboa','REBOA']];
+
+function parsePhrase(ph){var s=norm(ph.text),f=R().f;
+ /* vitals */
+ var v={},x;
+ if((x=num(s,'pulse|heart rate|hr|пульс|чсс'))&&(x=rng(x,20,250))!=null)v.hr=x;
+ var bp=s.match(/(?:bp|blood pressure|pressure|тиск|(?:^|\s)ат)[^\d]{0,14}(\d{2,3})\s*(?:\/|over|на|по|\s)\s*(\d{2,3})/i);
+ if(bp&&rng(bp[1],40,260)!=null&&rng(bp[2],20,180)!=null){v.sbp=bp[1];v.dbp=bp[2];}
+ else if((x=num(s,'systolic|систолічн'))&&(x=rng(x,40,260))!=null)v.sbp=x;
+ if((x=num(s,'spo2|sp o2|sats|sat|saturation|o2 sat|сатурац',12))&&(x=rng(x,50,100))!=null)v.spo2=x;
+ if((x=num(s,'respiratory rate|resp rate|resps|respirations|breathing rate|rr|частота дихання|(?:^|\\s)чд'))&&(x=rng(x,2,70))!=null)v.rr=x;
+ if((x=num(s,'gcs|glasgow|шкг|глазго'))&&(x=rng(x,3,15))!=null)v.gcs=x;
+ if((x=num(s,'temp|temperature|температур'))&&(x=rng(x,28,44))!=null)v.temp=x;
+ if((x=num(s,'pain score|pain is|pain|біль',10))&&(x=rng(x,0,10))!=null)v.pain=x;
+ if((x=num(s,'urine output|urine|діурез'))&&(x=rng(x,0,5000))!=null)v.urine=x;
+ if((x=num(s,'blood loss|ebl|крововтрат'))&&(x=rng(x,0,20000))!=null)v.ebl=x;
+ if(has(s,'unresponsive|not responding|не реагує|без свідомості'))v.avpu='U';
+ else if(has(s,'responds to pain|responsive to pain|реагує на біль'))v.avpu='P';
+ else if(has(s,'responds to voice|responsive to voice|реагує на голос|реагує на звернення'))v.avpu='V';
+ else if(hasW(s,'alert|притомний|притомна|при свідомості'))v.avpu='A';
+ opVit(ph,v);
+ /* tourniquets */
+ if(has(s,'tourniquet|tq|турнікет|джгут')){var site='',sd=sideOf(s);
+  if(has(s,'junction|вузлов|пахов|inguinal|axilla'))site=sd?'J'+sd:'';
+  else if(has(s,'abdominal|aortic|абдомінал'))site='ABD';
+  else if(sd&&has(s,'arm|upper|forearm|рук|руц|плеч|передпліч'))site=sd+'UE';
+  else if(sd&&has(s,'leg|thigh|lower|calf|ног|нoз|нозі|стегн|гомілк'))site=sd+'LE';
+  if(site){var col=has(s,'off|removed|taken down|released|зняли|знято|зняв|зняти|послабил')?'removed':has(s,'convert|конверт')?'converted':has(s,'moved|reposition|перемістил|переклали|перенакла')?'moved':'applied';
+   opTq(ph,site,col,'',spokenTime(s));}}
+ /* meds and procedures, per clause */
+ s.split(/;|,? and |,? then | та | і | й |\. /).forEach(function(seg){seg=' '+seg+' ';var neg=hasW(seg,NEG);
+  for(var i=0;i<MEDRX.length;i++){if(has(seg,MEDRX[i][0])){if(neg)break;var q=QP[MEDRX[i][1]],dm=seg.match(DOSE_RX);
+    opMed(ph,{name:T(q[0],q[1]),dose:dm?dm[1]+' '+unitOf(dm[2]):'',route:routeOf(seg)||q[3],cat:q[2]});
+    if(MEDRX[i][1]===17)opSet(ph,'tetanus','y',T('Tetanus prophylaxis','Профілактика правця'));break;}}
+  if(neg)return;
+  PROC.forEach(function(p){if(!has(seg,p[0]))return;var val=p[2];
+   if(val==='side'){val=sideOf(seg)||sideOf(s);if(!val)return;}
+   if(val==='?')val=has(seg,'active|heater|hpmk|ready-?heat|warmer|активн|грілк|зігрівальн')?'act':'pas';
+   opAdd(ph,p[1],val,p[3]+(p[2]==='side'?' '+(val==='R'?T('R','П'):T('L','Л')):''));});});
+ /* allergy */
+ if(has(s,'no known (?:drug )?allergies|nkda|nka|no allergies|алергі\\S* (?:немає|нема|не має)|без алергі'))opSet(ph,'allergy','n',T('Allergy: no','Алергія: ні'));
+ else{var am=s.match(/(?:allergic to|allergy to|алергі\S* на)\s+([^.,;]+)/);if(am){opSet(ph,'allergy','y',T('Allergy: yes','Алергія: так'));opSet(ph,'allergyTxt',am[1].trim(),T('Allergy: ','Алергія: ')+am[1].trim());}}
+ /* triage */
+ if(has(s,'triage|сортув|категорі')){var tr=has(s,'red|immediate|червон')?'R':has(s,'yellow|delayed|жовт')?'Y':has(s,'green|minimal|зелен')?'G':has(s,'black|expectant|чорн')?'B':'';if(tr)opSet(ph,'triage',tr,T('Triage ','Сортування ')+tr);}
+ /* key times */
+ if(has(s,'arrived|arrival|patient is here|прибув|надійшов|доставили'))opSetIfEmpty(ph,+ph.role>=2?'arr2Time':'arrTime',ph.t,+ph.role>=2?T('Arrival at Role 2','Прибуття на Рівень 2'):T('Arrival','Прибуття'));
+ if(has(s,'start\\S* cpr|start\\S* compressions|begin\\S* cpr|починаємо (?:слр|компресі|реанімац)|почали (?:слр|компресі)'))opSetIfEmpty(ph,'cprStart',ph.t,T('CPR start','СЛР початок'));
+ if(has(s,'rosc|stop\\S* cpr|stop\\S* compressions|pulse is back|відновлен\\S* (?:кровообіг|пульс)|є пульс'))opSetIfEmpty(ph,'cprEnd',ph.t,T('CPR end / ROSC','СЛР кінець'));
+ if(has(s,'time of death|pronounced|час смерті|констатуємо смерть|констатую смерть')){opSetIfEmpty(ph,'deathTime',spokenTime(s)||ph.t,T('Death','Смерть'));opSetIfEmpty(ph,'deathDate',today(),T('Death date','Дата смерті'));}
+ if(has(s,'skin incision|incision|розріз'))opSetIfEmpty(ph,'opStart',ph.t,T('Start of surgery','Початок операції'));
+ if(has(s,'skin closed|skin is closed|end of surgery|case is over|кінець операції|шкіру зашили|рану ушили'))opSetIfEmpty(ph,'opEnd',ph.t,T('End of surgery','Кінець операції'));
+ if(has(s,'departed|patient leaving|loaded on|відправили|вибув|евакуювали'))opSetIfEmpty(ph,+ph.role>=2?'depTime2':'depTime',ph.t,T('Departure','Вибуття'));
+ if(has(s,'time zero|час нуль|старт вправи'))opMark(ph,T('Time zero','Час нуль'));
+ /* E-FAST */
+ if(has(s,'fast|ефаст|фаст')){var pos=has(s,'positive|free fluid|позитив|вільна рідина'),ng=has(s,'negative|негатив|no free fluid|рідини немає');var Z=[['ruq','ruq|morison|right upper|печін|правий верхній'],['luq','luq|splen|left upper|селезін|лівий верхній'],['pel','pelvi|suprapubic|bladder|малий таз|тазу'],['per','pericard|перикард|cardiac|серц'],['rl','right lung|right chest|права легеня|справа пневмо'],['ll','left lung|left chest|ліва легеня|зліва пневмо']];
+  var hit=Z.filter(function(z){return has(s,z[1]);});
+  if(pos&&hit.length)hit.forEach(function(z){opEf(ph,z[0],'+');});
+  else if(ng&&hit.length)hit.forEach(function(z){opEf(ph,z[0],'-');});
+  else if(ng&&!hit.length)['ruq','luq','pel','per'].forEach(function(z){opEf(ph,z,'-');});}
+}
+
+/* ---------- Claude pass ---------- */
+var sampleFn=null,aiCtl=null;
+function schemaText(){var out=[],seen={};S.forEach(function(sx){sx.g.forEach(function(g){g.f.forEach(function(x){if(x.t==='w'||seen[x.k])return;seen[x.k]=1;
+ out.push(x.k+' ['+x.t+(x.u?' '+x.u:'')+'] '+x.en+(x.o?': '+x.o.map(function(o){return o[0]+'='+o[1];}).join('; '):''));});});});return out.join('\n');}
+function runAI(){if(!sampleFn||V.ai)return;var r=R(),todo=(r.voice||[]).filter(function(p){return !p.ai;});
+ if(!todo.length){V.aiMsg=T('Nothing new to process.','Немає нових фраз.');vpRender();return;}
+ todo=todo.slice(0,150);
+ var lines=todo.map(function(p){return '['+p.n+'] '+p.t+' (Role '+p.role+') "'+p.text.replace(/"/g,'\'')+'"'+(p.ops.length?' | already entered: '+p.ops.map(function(o){return o.d;}).join('; '):'');}).join('\n');
+ var prompt='You turn a timestamped trauma-team voice transcript into structured entries for a military casualty record (Ukrainian MoD/MoH forms 001/o, 002/o, 003-3/o). Speech may be Ukrainian, English or mixed, and transcription may contain errors.\n\n'+
+ 'Rules:\n- Record only what the speaker states was done, observed or measured. Skip questions, plans, discussion and unconfirmed orders (record an order only when it is confirmed done, e.g. "TXA is in", "дали ТХА").\n- Do not repeat anything listed as "already entered" for that phrase. You may add details missing from those entries only as new items.\n- Tie every item to the phrase number "p" where it was said. Never invent values.\n- For single-choice and multi-choice fields use only the option codes listed. Text values stay in the language spoken.\n- Times: HH:MM:SS. Only include "time" on a tq item when a clock time was spoken.\n\n'+
+ 'Reply with only a JSON array (empty array if nothing). Item shapes:\n'+
+ '{"p":3,"op":"set","k":"<field key>","v":"<value>"}  (single-choice, text, num, date YYYY-MM-DD, time fields)\n'+
+ '{"p":3,"op":"add","k":"<field key>","v":"<option code>"}  (multi fields)\n'+
+ '{"p":3,"op":"tq","site":"RUE|LUE|RLE|LLE|JR|JL|ABD","action":"applied|converted|moved|removed","name":"device if said","time":"HH:MM:SS if said"}\n'+
+ '{"p":3,"op":"med","name":"...","dose":"1 g","route":"IV|IO|IM|IN|PO|SL|SC|INH|TOP","cat":"anal|abx|txa|cry|blood|plas|anes|oth"}\n'+
+ '{"p":3,"op":"vit","hr":120,"sbp":90,"dbp":60,"spo2":94,"rr":22,"gcs":14,"avpu":"A|V|P|U","pain":5,"temp":36.1,"urine":50,"ebl":300,"signs":["x"]}\n'+
+ '{"p":3,"op":"efast","zone":"ruq|luq|pel|per|rl|ll","v":"+|-|?"}  ("-" means negative at this exam only)\n'+
+ '{"p":3,"op":"vent","mode":"..","rr":14,"tv":450,"fio2":0.5,"peep":5,"pip":22,"etco2":38,"o2":2,"inh":1}\n'+
+ '{"p":3,"op":"stage","txt":"short description of an intra-operative event"}\n\n'+
+ 'Fields (key [type] label: options):\n'+schemaText()+'\n\nTranscript:\n'+lines;
+ V.ai='run';V.aiMsg=T('Claude is reading the transcript...','Claude аналізує запис...');vpRender();aiCtl=new AbortController();
+ sampleFn.json(prompt,{signal:aiCtl.signal,cache:false}).then(function(items){var n=applyAI(items,todo);todo.forEach(function(p){p.ai=true;});save();V.ai=null;V.aiMsg=T('Added ','Додано ')+n+T(' entries from Claude.',' записів від Claude.');render();})
+ .catch(function(e){V.ai=null;var c=e&&e.code;V.aiMsg=c==='cancelled'?T('Stopped.','Зупинено.'):c==='not_granted'||c==='sampling_disabled'?T('Claude is not allowed for this page.','Claude недоступний для цієї сторінки.'):c==='rate_limited'?T('Too many requests. Try again shortly.','Забагато запитів. Спробуйте пізніше.'):c==='invalid_json'?T('Claude reply could not be read. Try again.','Не вдалося прочитати відповідь. Спробуйте ще раз.'):T('Claude pass failed. Try again.','Помилка. Спробуйте ще раз.');vpRender();});}
+function applyAI(items,todo){if(!Array.isArray(items))return 0;var by={},n=0;todo.forEach(function(p){by[p.n]=p;});
+ items.forEach(function(it){try{var ph=by[it&&it.p];if(!ph)return;var before=ph.ops.length;
+  if(it.op==='set'||it.op==='add'){var x=findF(it.k);if(!x||x.t==='w')return;var v=String(it.v==null?'':it.v).trim();if(!v)return;
+   if(x.o){if(!x.o.some(function(o){return o[0]===v;}))return;var ol=x.o.filter(function(o){return o[0]===v;})[0];
+    if(x.t==='multi')opAdd(ph,x.k,v,'✦ '+T(x.en,x.ua)+': '+T(ol[1],ol[2]));else opSet(ph,x.k,v,'✦ '+T(x.en,x.ua)+': '+T(ol[1],ol[2]));}
+   else{if(x.t==='time'&&!/^\d{2}:\d{2}(:\d{2})?$/.test(v))return;if(x.t==='date'&&!/^\d{4}-\d{2}-\d{2}$/.test(v))return;if(x.t==='num'&&isNaN(parseFloat(v)))return;
+    if(x.t==='area'&&R().f[x.k]&&String(R().f[x.k]).indexOf(v)<0)v=R().f[x.k]+'\n'+v;opSet(ph,x.k,v,'✦ '+T(x.en,x.ua)+': '+v.slice(0,60));}}
+  else if(it.op==='tq'){if(!/^(RUE|LUE|RLE|LLE|JR|JL|ABD)$/.test(it.site)||!/^(applied|converted|moved|removed)$/.test(it.action))return;var tt=/^\d{2}:\d{2}(:\d{2})?$/.test(it.time||'')?it.time:null;opTq(ph,it.site,it.action,it.name?String(it.name):'',tt);ph.ops[ph.ops.length-1].d='✦ '+ph.ops[ph.ops.length-1].d;}
+  else if(it.op==='med'){if(!it.name)return;opMed(ph,{name:String(it.name),dose:it.dose?String(it.dose):'',route:ROUTES.indexOf(it.route)>=0?it.route:'',cat:it.cat||''});ph.ops[ph.ops.length-1].d='✦ '+ph.ops[ph.ops.length-1].d;}
+  else if(it.op==='vit'){var v2={};VK.forEach(function(k){if(it[k]!=null&&it[k]!=='')v2[k]=it[k];});if(v2.avpu&&!/^[AVPU]$/.test(v2.avpu))delete v2.avpu;opVit(ph,v2);if(ph.ops.length>before)ph.ops[ph.ops.length-1].d='✦ '+ph.ops[ph.ops.length-1].d;}
+  else if(it.op==='efast'){if(!/^(ruq|luq|pel|per|rl|ll)$/.test(it.zone)||!/^[+\-?]$/.test(it.v))return;opEf(ph,it.zone,it.v);}
+  else if(it.op==='vent'){opVent(ph,it);}
+  else if(it.op==='stage'&&it.txt){opStage(ph,String(it.txt));}
+  if(ph.ops.length>before)n+=ph.ops.length-before;}catch(e){}});return n;}
+
+/* ---------- panel ---------- */
+function layout(){document.getElementById('app').classList.toggle('vpo',!!V.panel);vpRender();}
+function mmss(ms){var s=Math.max(0,Math.floor(ms/1000));return pad(Math.floor(s/60))+':'+pad(s%60);}
+var REASONS={stopped:['Stopped','Зупинено'],viewer_stopped:['Stopped','Зупинено'],hidden:['Paused: screen was hidden or app minimized. Tap Record to resume.','Пауза: екран було приховано. Натисніть Запис, щоб продовжити.'],time_limit:['60-minute session limit reached. Tap Record to continue.','Досягнуто ліміт 60 хв. Натисніть Запис.'],not_granted:['Microphone not allowed for this page.','Мікрофон не дозволено.'],dismissed:['Permission prompt closed. Tap Record to try again.','Запит закрито. Спробуйте ще раз.'],unavailable:['Speech recognition not available in this language here. Try the other language.','Розпізнавання недоступне цією мовою. Спробуйте іншу мову.'],rate_limited:['Too many dictation sessions. Try again shortly.','Забагато сесій. Спробуйте пізніше.'],upstream_error:['Microphone or speech service error. Tap Record to retry.','Помилка мікрофона або сервісу. Спробуйте ще раз.'],no_gesture:['Tap Record again.','Натисніть Запис ще раз.']};
+function vpRender(){var el=document.getElementById('vp');if(!el)return;if(!V.panel){el.innerHTML='';return;}
+ var r=R(),list=(r.voice||[]).slice().reverse(),pend=(r.voice||[]).filter(function(p){return !p.ai;}).length;
+ var h='<div class="vph"><b>'+esc(T('Voice capture','Голосовий запис'))+'</b><button class="mic" data-vpclose="1">'+esc(T('Hide','Сховати'))+'</button></div>';
+ h+='<div class="vpc"><div class="vclock" id="vpClock">'+hms(nowMs())+'</div><div class="unit" id="vpClockS">'+clockLine()+'</div>'+
+  '<div class="row" style="margin-top:6px;align-items:center"><span class="unit">'+esc(T('Reference offset','Зсув відносно еталону'))+'</span><button class="chip" data-ref="-1">−1 s</button><b style="min-width:52px;text-align:center">'+(clk.ref>0?'+':'')+clk.ref+' s</b><button class="chip" data-ref="1">+1 s</button></div>'+
+  '<button class="act sec" style="width:100%;margin-top:6px" data-t0="1">'+esc(T('Mark time zero','Позначити час нуль'))+'</button></div>';
+ h+='<div class="vpc"><div class="lab">'+esc(T('Speech language','Мова мовлення'))+'</div><div class="chips"><button class="chip'+(vlang()==='uk'?' on':'')+'" data-vlang="uk">Українська</button><button class="chip'+(vlang()==='en'?' on':'')+'" data-vlang="en">English</button></div>'+
+  '<button class="vrec'+(V.on?' live':'')+'" data-voice="1">'+(V.on?'■ '+esc(T('Stop recording','Зупинити запис')):'● '+esc(T('Record','Запис')))+'</button>'+
+  (dict?'':'<div class="gap">'+esc(T('Voice capture works in Chrome or the Claude desktop app main window.','Голосовий запис працює в Chrome або в головному вікні застосунку Claude.'))+'</div>')+
+  (V.msg&&!V.on&&REASONS[V.msg]?'<div class="unit" style="margin-top:6px">'+esc(T(REASONS[V.msg][0],REASONS[V.msg][1]))+'</div>':'')+
+  '<div class="vlive" id="vpLive">'+esc(V.partial||'')+'</div>'+
+  '<div class="unit">'+esc(T('Speak one item at a time: “tourniquet right leg on”, “pulse 124, pressure 88 over 50”, “TXA 1 gram IV”.','Говоріть по одному пункту: «турнікет права нога накладено», «пульс 124, тиск 88 на 50», «ТХА 1 грам в/в».'))+'</div></div>';
+ if(sampleFn)h+='<div class="vpc"><button class="act" style="width:100%" data-ai="1"'+(V.ai||!pend?' disabled':'')+'>✦ '+esc(T('Fill remaining fields with Claude','Заповнити решту полів з Claude'))+' ('+pend+')</button>'+(V.ai?'<button class="act sec" style="width:100%;margin-top:6px" data-aistop="1">'+esc(T('Stop','Стоп'))+'</button>':'')+(V.aiMsg?'<div class="unit" style="margin-top:6px">'+esc(V.aiMsg)+'</div>':'')+'<div class="unit" style="margin-top:4px">'+esc(T('Reads phrases the live parser could not fully capture. Entries keep the time each phrase was spoken.','Обробляє фрази, які не вдалося повністю розпізнати. Записи зберігають час, коли фразу було сказано.'))+'</div></div>';
+ h+='<div class="vlist">';
+ list.forEach(function(p){h+='<div class="vph2"><div class="row" style="flex-wrap:nowrap;align-items:baseline"><b class="vt">'+esc(p.t)+'</b><span class="rl2">R'+esc(p.role)+'</span>'+(p.ai?'<span class="rl2">✦</span>':'')+'</div><div class="vtx">'+esc(p.text)+'</div>';
+  p.ops.forEach(function(o,i){h+='<span class="vop">'+esc(o.d)+' <button data-undo="'+p.id+'|'+i+'" title="Undo">↺</button></span>';});
+  if(!p.ops.length)h+='<span class="unit">'+esc(T('Transcript only','Лише текст'))+'</span>';h+='</div>';});
+ if(!list.length)h+='<div class="unit" style="padding:10px">'+esc(T('Spoken phrases appear here with the time they were said.','Сказані фрази з’являються тут із часом.'))+'</div>';
+ el.innerHTML=h+'</div>';}
+function clockLine(){var t;if(clk.state==='ok')t=clk.applied?T('Device clock was off by ','Годинник пристрою відставав на ')+(clk.srv/1000).toFixed(1)+T(' s, corrected to server time',' с, виправлено за сервером'):T('Device clock checked against server: within about 1 s','Годинник перевірено за сервером: точність близько 1 с');
+ else if(clk.state==='fail')t=T('Could not check against server time; using device clock','Не вдалося перевірити час; використовується годинник пристрою');
+ else if(clk.state==='checking')t=T('Checking clock...','Перевірка часу...');else t=T('Device clock (not yet checked)','Годинник пристрою (не перевірено)');
+ return esc(t);}
+
+
+/* ---------- serial E-FAST ---------- */
+var EFZ=[['ruq','RUQ (Morison)','Правий верхній квадрант'],['luq','LUQ (splenorenal)','Лівий верхній квадрант'],['pel','Pelvis','Малий таз'],['per','Pericardium','Перикард'],['rl','R chest (PTX/HTX)','Права гр. порожнина'],['ll','L chest (PTX/HTX)','Ліва гр. порожнина']];
+var EFV=[['+','+','+'],['-','− now','− зараз'],['?','?','?']];
+function efx(){var r=R();if(!r.efx)r.efx=[];return r.efx;}
+function efSorted(){return efx().slice().sort(function(a,b){return (a.time||'99').localeCompare(b.time||'99');});}
+function efNew(t,role){var e={id:uid(),time:t||nowT(),role:role||R().role,z:{},by:'',note:''};efx().push(e);return e;}
+function efRes(e){var pos=EFZ.filter(function(z){return e.z[z[0]]==='+';}).map(function(z){return z[0].toUpperCase();});var any=EFZ.some(function(z){return e.z[z[0]];});
+ if(pos.length)return '+ '+pos.join(', ');if(!any)return T('not recorded','не записано');if(EFZ.some(function(z){return e.z[z[0]]==='?';}))return T('indeterminate','сумнівно');var nd=EFZ.filter(function(z){return e.z[z[0]];}).length;return T('negative at this time','негативний на цей час')+(nd<6?' ('+nd+'/6 '+T('windows','зон')+')':'');}
+function efDue(){var r=R(),iv=r.efastInt==null?30:+r.efastInt;if(!iv)return null;if(r.f.depTime2||r.f.deathTime||(r.f.depTime&&!r.f.arr2Time))return null;var L=efSorted().filter(function(e){return e.time;});if(!L.length)return null;
+ var last=L[L.length-1],s0=tsec(last.time),due=s0+iv*60,d=new Date(nowMs()),now=d.getHours()*3600+d.getMinutes()*60+d.getSeconds();if(now<s0-43200)now+=86400;
+ return {due:hms2(due).slice(0,5),late:Math.round((now-due)/60),n:L.length};}
+function efWidget(){var r=R(),L=efSorted(),iv=r.efastInt==null?30:+r.efastInt,h='';
+ var du=efDue();
+ h+='<div class="row" style="align-items:center;margin-bottom:10px"><button class="act" data-efnew="1">+ '+esc(T('New E-FAST exam (now)','Нове E-FAST обстеження (зараз)'))+'</button>'+
+  '<span class="unit" style="margin-left:8px">'+esc(T('Repeat every','Повторювати кожні'))+'</span>';
+ [0,15,30,60].forEach(function(m){h+='<button class="chip'+(iv===m?' on':'')+'" data-efint="'+m+'">'+(m?m+' '+T('min','хв'):T('Off','Вимк.'))+'</button>';});
+ if(du)h+='<span class="tag '+(du.late>0?'red':'')+'" style="'+(du.late>0?'':'background:#E3ECF6;color:#2E5A8A')+';margin-left:8px;padding:8px 10px">'+(du.late>0?esc(T('E-FAST overdue ','E-FAST прострочено ')+du.late+T(' min',' хв')):esc(T('Next E-FAST due ','Наступне E-FAST о ')+du.due))+'</span>';
+ h+='</div>';
+ if(!L.length)return h+'<div class="unit">'+esc(T('No E-FAST recorded yet. A negative exam is negative for now: each exam starts the repeat timer.','E-FAST ще не записано. Негативний результат означає лише «на цей час»: кожне обстеження запускає таймер повтору.'))+'</div>';
+ h+='<div class="efw"><table class="efs"><tr><th class="efz">'+esc(T('Window','Зона'))+'</th>';
+ L.forEach(function(e,i){var gap='';if(i&&e.time&&L[i-1].time){var m=Math.round((tsec(e.time)-tsec(L[i-1].time))/60);if(m<0)m+=1440;gap='+'+m+T(' min',' хв');}
+  h+='<th><div class="efh"><b>#'+(i+1)+'</b> <span class="rl">R'+esc(e.role)+'</span> <span style="font-weight:400">'+esc(gap)+'</span><button class="efdel" data-efdel="'+e.id+'">✕</button></div><input type="text" data-time="1" inputmode="'+IMT()+'" placeholder="--:--" autocomplete="off" data-eft="'+e.id+'|time" value="'+esc(e.time)+'"></th>';});
+ h+='</tr>';
+ EFZ.forEach(function(z){h+='<tr><td class="efz">'+esc(T(z[1],z[2]))+'</td>';L.forEach(function(e){h+='<td><div class="efc">';EFV.forEach(function(v){var on=e.z[z[0]]===v[0];h+='<button class="chip ef'+(v[0]==='+'?'p':v[0]==='-'?'n':'q')+(on?' on':'')+'" data-efc="'+e.id+'|'+z[0]+'|'+v[0]+'">'+esc(T(v[1],v[2]))+'</button>';});h+='</div></td>';});h+='</tr>';});
+ h+='<tr><td class="efz">'+esc(T('Result','Результат'))+'</td>';L.forEach(function(e){var rs=efRes(e);h+='<td><b style="color:'+(rs.charAt(0)==='+'?'#B3261E':'#1C2B3A')+'">'+esc(rs)+'</b></td>';});h+='</tr>';
+ h+='<tr><td class="efz">'+esc(T('Performed by','Виконав'))+'</td>';L.forEach(function(e){h+='<td><input type="text" data-eft="'+e.id+'|by" value="'+esc(e.by)+'"></td>';});h+='</tr>';
+ h+='<tr><td class="efz">'+esc(T('Note','Примітка'))+'</td>';L.forEach(function(e){h+='<td><input type="text" data-eft="'+e.id+'|note" value="'+esc(e.note)+'"></td>';});h+='</tr>';
+ return h+'</table></div><div class="unit" style="margin-top:6px">'+esc(T('− now = no free fluid or pneumothorax seen at this exam only. It does not rule out injury; repeat on schedule and with any change in condition.','− зараз = вільної рідини чи пневмотораксу на цьому обстеженні не виявлено. Це не виключає ушкодження; повторюйте за графіком і при будь-якій зміні стану.'))+'</div>';}
+
+/* ---------- vital signs chart (003-3/о style) ---------- */
+function tsec(t){if(!t)return null;var p=String(t).split(':');if(p.length<2)return null;return (+p[0])*3600+(+p[1])*60+(+(p[2]||0));}
+function vchart(){var r=R(),pts=[];
+ function push(t,kind,obj){var s=tsec(t);if(s!=null)pts.push({s:s,k:kind,o:obj});}
+ r.vitals.forEach(function(v){push(v.time,'v',v);});
+ r.vent.forEach(function(v){push(v.time,'w',v);});
+ r.meds.forEach(function(m){push(m.time,'m',m);});
+ r.stages.forEach(function(x){push(x.time,'e',{txt:x.txt});});
+ efSorted().forEach(function(e,i){push(e.time,'e',{txt:'E-FAST #'+(i+1)+': '+efRes(e)});});
+ Object.keys(r.tq).forEach(function(k){var q=r.tq[k];['applied','converted','moved','removed'].forEach(function(c){if(q[c])push(q[c],'e',{txt:'TQ '+tqName(k)+' '+colName(c)});});});
+ [['incTime',T('Injury','Поранення')],['arrTime',T('Arrival','Прибуття')],['arrOrT',T('In OR','В операційній')],['opStart',T('Surgery start','Початок операції')],['opEnd',T('Surgery end','Кінець операції')],['cprStart',T('CPR start','СЛР')],['cprEnd',T('CPR end','СЛР кінець')],['deathTime',T('Death','Смерть')],['depTime',T('Departure','Вибуття')],['arr2Time',T('Arrival Role 2','Прибуття Р2')],['depTime2',T('Departure Role 2','Вибуття Р2')]].forEach(function(x){if(r.f[x[0]])push(r.f[x[0]],'e',{txt:x[1]});});
+ (r.marks||[]).forEach(function(m){push(m.t,'e',{txt:m.txt});});
+ if(!r.vitals.some(function(v){return v.time;}))return '<div class="unit" style="padding:8px 0">'+esc(T('The chart draws itself as vital signs are added (typed or spoken).','Графік будується автоматично з показників (введених або сказаних).'))+'</div>';
+ pts.sort(function(a,b){return a.s-b.s;});
+ /* unwrap past midnight relative to first vital */
+ var first=pts[0].s;pts.forEach(function(p){if(p.s<first-43200)p.s+=86400;});pts.sort(function(a,b){return a.s-b.s;});
+ var t0=Math.floor(pts[0].s/300)*300,t1=Math.ceil((pts[pts.length-1].s+120)/300)*300;if(t1-t0<1800)t1=t0+1800;
+ var PPM=Math.max(9,Math.min(24,1050/((t1-t0)/60))),X=function(s){return 12+(s-t0)/60*PPM;},W=X(t1)+16;
+ var TOP=14,PH=300,Y=function(v){return TOP+PH-(Math.max(0,Math.min(240,v))/240)*PH;};
+ var ROWS=[['spo2','SpO₂ %'],['rr',T('Resp. rate','Дихання')],['vent',T('FiO₂ / PEEP','FiO₂ / ПТКВ')],['o2',T('O₂ L/min','Кисень л/хв')],['inh',T('Agent L/min','Анестетик л/хв')],['etco2','EtCO₂'],['temp','T °C'],['urine',T('Urine mL','Діурез мл')],['ebl',T('Blood loss mL','Крововтрата')],['sg',T('Signs','Ознаки')],['meds',T('Drugs / fluids','Ліки / інфузії')],['ev',T('Events','Події')]];
+ var RH=26,RY0=TOP+PH+26,H=RY0+ROWS.length*RH+6;
+ /* left axis */
+ var L='<svg width="104" height="'+H+'" class="vcl">';
+ for(var v=0;v<=240;v+=20){L+='<text x="98" y="'+(Y(v)+4)+'" text-anchor="end" font-size="11" fill="#5B6B7C">'+v+'</text>';}
+ ROWS.forEach(function(rw,i){L+='<text x="98" y="'+(RY0+i*RH+17)+'" text-anchor="end" font-size="11" font-weight="700" fill="#1C2B3A">'+esc(rw[1])+'</text>';});
+ L+='</svg>';
+ /* plot */
+ var g='<svg width="'+W+'" height="'+H+'" class="vcp">';
+ for(v=0;v<=240;v+=10)g+='<line x1="0" x2="'+W+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="'+(v%50===0?'#C3CFDB':'#E6EBF1')+'"/>';
+ for(var s=t0;s<=t1;s+=300){var x=X(s),maj=s%900===0;g+='<line x1="'+x+'" x2="'+x+'" y1="'+TOP+'" y2="'+(H-4)+'" stroke="'+(maj?'#AFC0D2':'#E6EBF1')+'"/>';
+  if(maj){var hh=Math.floor(s/3600)%24,mm=Math.floor(s%3600/60);g+='<text x="'+x+'" y="'+(TOP+PH+16)+'" text-anchor="'+(x<30?'start':'middle')+'" font-size="11" fill="#1C2B3A" font-weight="700">'+pad(hh)+':'+pad(mm)+'</text>';}}
+ ROWS.forEach(function(rw,i){var y=RY0+i*RH;g+='<rect x="0" y="'+y+'" width="'+W+'" height="'+RH+'" fill="'+(i%2?'#F6F8FB':'#fff')+'" stroke="#E6EBF1"/>';});
+ var vs=pts.filter(function(p){return p.k==='v';});
+ /* pulse line */
+ var hp=vs.filter(function(p){return p.o.hr;}).map(function(p){return X(p.s).toFixed(1)+','+Y(+p.o.hr).toFixed(1);});
+ if(hp.length>1)g+='<polyline points="'+hp.join(' ')+'" fill="none" stroke="#B3261E" stroke-width="1.5" stroke-dasharray="4 3"/>';
+ vs.forEach(function(p){var o=p.o,x=X(p.s),tip=p.o.time+'  '+vdesc(o);
+  if(o.sbp&&o.dbp)g+='<line x1="'+x+'" x2="'+x+'" y1="'+Y(+o.sbp)+'" y2="'+Y(+o.dbp)+'" stroke="#1C2B3A" stroke-width="2"/>';
+  if(o.sbp)g+='<path d="M'+(x-6)+','+(Y(+o.sbp)-7)+' L'+x+','+Y(+o.sbp)+' L'+(x+6)+','+(Y(+o.sbp)-7)+'" fill="none" stroke="#1C2B3A" stroke-width="2.5"/>';
+  if(o.dbp)g+='<path d="M'+(x-6)+','+(Y(+o.dbp)+7)+' L'+x+','+Y(+o.dbp)+' L'+(x+6)+','+(Y(+o.dbp)+7)+'" fill="none" stroke="#1C2B3A" stroke-width="2.5"/>';
+  if(o.hr)g+='<circle cx="'+x+'" cy="'+Y(+o.hr)+'" r="4.5" fill="#B3261E"/>';
+  g+='<rect data-tip="'+esc(tip)+'" x="'+(x-9)+'" y="'+TOP+'" width="18" height="'+PH+'" fill="transparent"/>';
+  [['spo2',0],['rr',1],['etco2',5],['temp',6],['urine',7],['ebl',8]].forEach(function(c){if(o[c[0]]!=null&&o[c[0]]!=='')g+=cell(x,RY0+c[1]*RH,o[c[0]],c[0]==='spo2'&&+o.spo2<90);});
+  if(o.signs&&o.signs.length)g+=cell(x,RY0+9*RH,o.signs.join(' '));});
+ pts.filter(function(p){return p.k==='w';}).forEach(function(p){var o=p.o,x=X(p.s);
+  var t=[o.fio2,o.peep].filter(function(z){return z!=null&&z!=='';}).join('/');if(t)g+=cell(x,RY0+2*RH,t);if(o.o2)g+=cell(x,RY0+3*RH,o.o2);if(o.inh)g+=cell(x,RY0+4*RH,o.inh);if(o.etco2)g+=cell(x,RY0+5*RH,o.etco2);
+  if(o.rr)g+=cell(x,RY0+RH,'//'+o.rr);});
+ var lane=0;pts.filter(function(p){return p.k==='m';}).forEach(function(p){var o=p.o,x=X(p.s),y=RY0+10*RH;lane=1-lane;
+  var lbl=(o.name||'').slice(0,4)+(o.dose?' '+o.dose:'');g+='<g data-tip="'+esc(o.time+'  '+[o.name,o.dose,o.route].filter(Boolean).join(' '))+'"><line x1="'+x+'" x2="'+x+'" y1="'+y+'" y2="'+(y+RH)+'" stroke="#2E5A8A" stroke-width="2"/><text x="'+(x+3)+'" y="'+(y+(lane?11:22))+'" font-size="10" fill="#2E5A8A">'+esc(lbl)+'</text></g>';});
+ pts.filter(function(p){return p.k==='e';}).forEach(function(p){var x=X(p.s),y=RY0+11*RH+13;g+='<g data-tip="'+esc(hms2(p.s)+'  '+p.o.txt)+'"><path d="M'+x+','+(y-7)+' L'+(x+7)+','+y+' L'+x+','+(y+7)+' L'+(x-7)+','+y+' Z" fill="#2E5A8A"/></g>';});
+ g+='</svg>';
+ var leg='<div class="vleg"><span><svg width="16" height="12"><path d="M2,2 L8,10 L14,2" fill="none" stroke="#1C2B3A" stroke-width="2.5"/></svg> '+esc(T('Systolic','Систолічний АТ'))+'</span><span><svg width="16" height="12"><path d="M2,10 L8,2 L14,10" fill="none" stroke="#1C2B3A" stroke-width="2.5"/></svg> '+esc(T('Diastolic','Діастолічний АТ'))+'</span><span><svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="#B3261E"/></svg> '+esc(T('Pulse','Пульс'))+'</span><span><svg width="14" height="14"><path d="M7,1 L13,7 L7,13 L1,7 Z" fill="#2E5A8A"/></svg> '+esc(T('Event','Подія'))+'</span><span>// '+esc(T('ventilated','ШВЛ'))+'</span><span class="unit">'+esc(T('Tap a mark for details. Scroll sideways for earlier times.','Торкніться позначки для деталей. Прокрутіть убік для раніших записів.'))+'</span></div>';
+ return leg+'<div class="vchart">'+L+'<div class="vcs">'+g+'</div></div>';}
+function cell(x,y,v,warn){return '<text x="'+x+'" y="'+(y+17)+'" text-anchor="middle" font-size="12" font-weight="700" fill="'+(warn?'#B3261E':'#1C2B3A')+'">'+esc(v)+'</text>';}
+function hms2(s){s=s%86400;return pad(Math.floor(s/3600))+':'+pad(Math.floor(s%3600/60))+':'+pad(s%60);}
+function chartsToEnd(){document.querySelectorAll('.vcs').forEach(function(d){d.scrollLeft=d.scrollWidth;});}
+
+/* ---------- export ---------- */
+function flat(r){var o={id:r.id,role:r.role,updated:r.updated};Object.keys(r.f).forEach(function(k){var v=r.f[k];o[k]=Array.isArray(v)?v.join(';'):v;});
+ Object.keys(r.tq).forEach(function(k){Object.keys(r.tq[k]).forEach(function(c){o['tq_'+k+'_'+c]=r.tq[k][c];});});
+ efSorted().forEach(function(e,i){o['efast'+(i+1)+'_time']=e.time;EFZ.forEach(function(z){o['efast'+(i+1)+'_'+z[0]]=e.z[z[0]]||'';});});
+ o.meds=r.meds.map(function(m){return m.time+' '+m.name+' '+m.dose+' '+m.route;}).join(' | ');
+ o.vitals=r.vitals.map(function(v){return v.time+' HR'+(v.hr||'')+' BP'+(v.sbp||'')+'/'+(v.dbp||'')+' SpO2 '+(v.spo2||'');}).join(' | ');
+ o.transcript=(r.voice||[]).map(function(p){return p.t+' '+p.text;}).join(' | ');
+ o.injuries=r.body.map(function(m){return m.side+':'+m.type+'@'+m.x+','+m.y;}).join(' ');return o;}
+function csv(){var rows=Object.keys(recs).map(function(k){return flat(recs[k]);}),cols=[];rows.forEach(function(r){Object.keys(r).forEach(function(c){if(cols.indexOf(c)<0)cols.push(c);});});
+ function q(v){v=v==null?'':String(v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+ return [cols.join(',')].concat(rows.map(function(r){return cols.map(function(c){return q(r[c]);}).join(',');})).join('\n');}
+function doExport(kind){var r=R(),nm=(r.f.cardNo||r.id).replace(/[^\w-]+/g,'_');
+ if(kind==='copy'){navigator.clipboard.writeText(JSON.stringify(r,null,1)).then(function(){toast(T('Copied','Скопійовано'));},function(){toast(T('Copy blocked','Копіювання заблоковано'));});return;}
+ var file=kind==='json'?{filename:'STORM2_UCR_'+nm+'.json',data:JSON.stringify(r,null,1)}:kind==='csv'?{filename:'STORM2_UCR_all_'+today()+'.csv',data:'﻿'+csv()}:{filename:'STORM2_UCR_'+nm+'_summary.txt',data:summary()+'\n\n'+events().map(function(e){return e.t+'  '+(e.role?'R'+e.role+'  ':'')+e.txt;}).join('\n')+((r.voice||[]).length?'\n\nTRANSCRIPT\n'+r.voice.map(function(p){return p.iso+'  R'+p.role+'  '+p.text;}).join('\n'):'')};
+ if(!dl){try{var bl=new Blob([file.data],{type:'text/plain;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=file.filename;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);toast(T('Saved','Збережено'));}catch(e){toast(T('Download unavailable','Завантаження недоступне'));}return;}
+ dl.save(file).then(function(){toast(T('Saved','Збережено'));},function(er){if(er&&er.code!=='declined')toast(T('Download unavailable','Завантаження недоступне'));});}
+
+/* ---------- boot ---------- */
+try{var sl=localStorage.getItem(KEY+'_lang');if(sl)L=sl;}catch(e){}
+load();render();
+setInterval(function(){soft();},30000);
+setInterval(function(){var c=document.getElementById('vpClock');if(c)c.textContent=hms(nowMs());var rt=document.getElementById('recT');if(rt)rt.textContent=mmss(nowMs()-V.t0);},500);
+document.getElementById('content').addEventListener('scroll',spy,{passive:true});
+var tries=0;(function boot(){if(!(window.claude&&window.claude.use)){if(tries++<20)setTimeout(boot,250);return;}
+ window.claude.use('downloads').then(function(x){dl=x;if(x&&sec==='tl')render();}).catch(function(){});
+ window.claude.use('dictation').then(function(x){dict=x;if(x){wireDict();render();}}).catch(function(){});
+ window.claude.use('sample').then(function(x){sampleFn=x;if(x)vpRender();}).catch(function(){});
+ window.claude.use('db').then(function(x){db=x;if(x)sync();}).catch(function(){});
+})();
+})();
+</script>
+</body>
+</html>
