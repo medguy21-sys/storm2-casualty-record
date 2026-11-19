@@ -918,6 +918,29 @@ document.addEventListener('keydown',function(e){if(kpT&&e.target===kpT&&e.key.le
 document.addEventListener('pointerdown',function(e){var k=e.target.closest('#kp button');if(k){e.preventDefault();if(k.dataset.kp)kpKey(k.dataset.kp);else if(k.dataset.kpq)kpQuick(k.dataset.kpq);return;}
  if(kpT&&!e.target.closest('#kp')&&!e.target.closest('input[data-num],input[data-time]'))kpHide();},true);
 
+
+/* ---------- browser speech engine (standalone / GitHub Pages) ---------- */
+var speechEngine='claude';
+function webSpeechDict(){var SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR)return null;
+ var H={p:[],f:[],s:[]},rec=null,want=false,state='idle',endReason='stopped',pend=null,LANG={uk:'uk-UA',en:'en-US'};
+ function emit(a,o){H[a].slice().forEach(function(h){try{h(o);}catch(e){}});}
+ function setState(st,reason){state=st;emit('s',reason?{state:st,reason:reason}:{state:st});}
+ function build(lang){var r=new SR();r.continuous=true;r.interimResults=true;r.maxAlternatives=1;r.lang=lang;
+  r.onstart=function(){if(state!=='listening')setState('listening');if(pend){pend.res();pend=null;}};
+  r.onresult=function(e){var interim='';for(var i=e.resultIndex;i<e.results.length;i++){var x=e.results[i];if(x.isFinal){var t=(x[0]&&x[0].transcript||'').trim();if(t)emit('f',{text:t});emit('p',{text:''});}else interim+=x[0].transcript;}if(interim)emit('p',{text:interim});};
+  r.onerror=function(e){var c=e.error;if(c==='not-allowed'||c==='service-not-allowed'){want=false;endReason='not_granted';}else if(c==='language-not-supported'){want=false;endReason='unavailable';}else if(c==='audio-capture'){want=false;endReason='upstream_error';}else if(c==='network'){want=false;endReason='upstream_error';}
+   if(pend&&!want){pend.rej({code:endReason,message:c});pend=null;}};
+  r.onend=function(){if(want){try{r.start();return;}catch(x){}}rec=null;setState('idle',endReason);};
+  return r;}
+ return {
+  start:function(o){if(state!=='idle')return Promise.resolve();want=true;endReason='stopped';var lang=LANG[(o&&o.language)||'uk']||'uk-UA';
+   return new Promise(function(res,rej){pend={res:res,rej:rej};try{rec=build(lang);setState('starting');rec.start();}catch(x){want=false;pend=null;setState('idle','upstream_error');rej({code:'upstream_error',message:String(x)});}});},
+  stop:function(){want=false;endReason='stopped';if(!rec)return Promise.resolve();return new Promise(function(res){var r=rec,done=false;var h=function(e){if(e.state==='idle'&&!done){done=true;var i=H.s.indexOf(h);if(i>=0)H.s.splice(i,1);res();}};H.s.push(h);try{r.stop();}catch(x){res();}setTimeout(function(){if(!done){done=true;res();}},3000);});},
+  active:function(){return state!=='idle';},
+  onPartial:function(h){H.p.push(h);return function(){};},
+  onFinal:function(h){H.f.push(h);return function(){};},
+  onState:function(h){H.s.push(h);return function(){};}};}
+
 /* ---------- clock ---------- */
 var clk={srv:null,state:'unk',ref:0};
 function nowMs(){return Date.now()+(clk.applied?clk.srv:0)+clk.ref*1000;}
@@ -1155,7 +1178,7 @@ function vpRender(){var el=document.getElementById('vp');if(!el)return;if(!V.pan
   '<button class="act sec" style="width:100%;margin-top:6px" data-t0="1">'+esc(T('Mark time zero','Позначити час нуль'))+'</button></div>';
  h+='<div class="vpc"><div class="lab">'+esc(T('Speech language','Мова мовлення'))+'</div><div class="chips"><button class="chip'+(vlang()==='uk'?' on':'')+'" data-vlang="uk">Українська</button><button class="chip'+(vlang()==='en'?' on':'')+'" data-vlang="en">English</button></div>'+
   '<button class="vrec'+(V.on?' live':'')+'" data-voice="1">'+(V.on?'■ '+esc(T('Stop recording','Зупинити запис')):'● '+esc(T('Record','Запис')))+'</button>'+
-  (dict?'':'<div class="gap">'+esc(T('Voice capture works in Chrome or the Claude desktop app main window.','Голосовий запис працює в Chrome або в головному вікні застосунку Claude.'))+'</div>')+
+  (dict?(speechEngine==='browser'?'<div class="unit" style="margin-top:6px">'+esc(T('Speech engine: browser (audio is processed by Google in Chrome or Microsoft in Edge). Needs internet.','Розпізнавання: браузер (аудіо обробляє Google у Chrome або Microsoft у Edge). Потрібен інтернет.'))+'</div>':''):'<div class="gap">'+esc(inClaude?T('Voice capture works in Chrome or the Claude desktop app main window.','Голосовий запис працює в Chrome або в головному вікні застосунку Claude.'):T('Voice capture needs Microsoft Edge or Google Chrome.','Голосовий запис потребує Microsoft Edge або Google Chrome.'))+'</div>')+
   (V.msg&&!V.on&&REASONS[V.msg]?'<div class="unit" style="margin-top:6px">'+esc(T(REASONS[V.msg][0],REASONS[V.msg][1]))+'</div>':'')+
   '<div class="vlive" id="vpLive">'+esc(V.partial||'')+'</div>'+
   '<div class="unit">'+esc(T('Speak one item at a time: “tourniquet right leg on”, “pulse 124, pressure 88 over 50”, “TXA 1 gram IV”.','Говоріть по одному пункту: «турнікет права нога накладено», «пульс 124, тиск 88 на 50», «ТХА 1 грам в/в».'))+'</div></div>';
@@ -1281,7 +1304,8 @@ load();render();
 setInterval(function(){soft();},30000);
 setInterval(function(){var c=document.getElementById('vpClock');if(c)c.textContent=hms(nowMs());var rt=document.getElementById('recT');if(rt)rt.textContent=mmss(nowMs()-V.t0);},500);
 document.getElementById('content').addEventListener('scroll',spy,{passive:true});
-var tries=0;(function boot(){if(!(window.claude&&window.claude.use)){if(tries++<20)setTimeout(boot,250);return;}
+if(!inClaude){dict=webSpeechDict();if(dict){speechEngine='browser';wireDict();render();}}
+var tries=0;(function boot(){if(!inClaude)return;if(!(window.claude&&window.claude.use)){if(tries++<20)setTimeout(boot,250);return;}
  window.claude.use('downloads').then(function(x){dl=x;if(x&&sec==='tl')render();}).catch(function(){});
  window.claude.use('dictation').then(function(x){dict=x;if(x){wireDict();render();}}).catch(function(){});
  window.claude.use('sample').then(function(x){sampleFn=x;if(x)vpRender();}).catch(function(){});
