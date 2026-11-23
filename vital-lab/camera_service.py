@@ -21,10 +21,11 @@ def protect(value, decrypt=False):
 
 class Camera:
     def __init__(self, config, password=''):
-        self.config=config;self.password=password;self.lock=threading.Condition();self.frame=None;self.sequence=0;self.last_frame=0;self.demand=0;self.thread=None;self.stop=threading.Event();self.status='Ready' if password else 'Login required'
+        self.config=config;self.password=password;self.lock=threading.Condition();self.frame=None;self.sequence=0;self.last_frame=0;self.demand=0;self.thread=None;self.stop=threading.Event();self.status='Ready' if password else 'Login required';self.error_type=None
     def public(self):
         return dict(id=self.config['id'],label=self.config['label'],configured=bool(self.password),status=self.status,frameAge=None if not self.last_frame else round(time.monotonic()-self.last_frame,1))
     def request(self):
+        if self.error_type in ('HTTPUnauthorizedError','HTTPForbiddenError'):return
         with self.lock:
             self.demand=time.monotonic()
             if self.password and (not self.thread or not self.thread.is_alive()) and not self.stop.is_set():
@@ -54,12 +55,14 @@ class Camera:
                     if not packets:continue
                     with self.lock:
                         self.frame=b''.join(bytes(p) for p in packets);self.sequence+=1;self.last_frame=now;self.status='Live';self.lock.notify_all()
-            except Exception:
-                self.status='Connection failed — check camera login and network'
+            except Exception as exc:
+                self.error_type=type(exc).__name__
+                self.status='Camera login rejected — check Camera Account' if 'Unauthorized' in self.error_type else 'Connection failed — check camera login and network'
+                if self.error_type in ('HTTPUnauthorizedError','HTTPForbiddenError'):break
                 self.stop.wait(3)
             finally:
                 if container:container.close()
-        if not self.stop.is_set():self.status='Ready' if self.password else 'Login required'
+        if not self.stop.is_set() and not self.error_type:self.status='Ready' if self.password else 'Login required'
 
 class CameraManager:
     def __init__(self, folder):

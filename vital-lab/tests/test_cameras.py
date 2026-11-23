@@ -18,6 +18,19 @@ class CamerasTest(unittest.TestCase):
             self.assertEqual(len(m.catalog()),5)
             m.save(dict(id='new-camera',label='Clinic 3',remove=True));self.assertEqual(len(m.catalog()),4)
             with self.assertRaises(ValueError):m.save(dict(id='bad',label='Bad',address='127.0.0.1',username='x',password='y'))
+    def test_bad_login_waits_for_correction(self):
+        from unittest.mock import patch
+        from types import SimpleNamespace
+        import sys
+        from camera_service import Camera
+        class HTTPUnauthorizedError(Exception):pass
+        calls=[]
+        def rejected(*args,**kwargs):calls.append(True);raise HTTPUnauthorizedError()
+        fake=SimpleNamespace(logging=SimpleNamespace(PANIC=0,set_level=lambda level:None),open=rejected)
+        camera=Camera(dict(id='test',label='Test',address='192.168.1.100',username='test',stream='stream2'),'unit-test-password')
+        camera.demand=__import__('time').monotonic()
+        with patch.dict(sys.modules,{'av':fake}):camera.decode();camera.request()
+        self.assertEqual(len(calls),1);self.assertIn('login rejected',camera.status);self.assertIsNone(camera.thread)
     @unittest.skipUnless(os.name=='nt','Windows encryption')
     def test_windows_password_protection(self):
         value=protect('private-credential');self.assertNotIn('private-credential',value);self.assertEqual(protect(value,True),'private-credential')
