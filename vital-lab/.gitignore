@@ -5,3 +5,6 @@ __pycache__/
 *.spec
 build/
 dist/
+cameras-private.json
+camera-deps/
+buildtools/

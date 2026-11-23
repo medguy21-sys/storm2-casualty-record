@@ -1,8 +1,7 @@
-Validated 22 November 2026 in headless Microsoft Edge.
-Compact instructor layout: 1100, 768 and 600 pixel widths; no horizontal overflow.
-Clock, intervention marking, camera picker, tools and pane arrangement passed.
-VIP1/VIP2 independent presentation and all-screen selection passed. Viewer write access refused.
-Student patient, vitals and destination preserved while VIP presentation changed.
-Packaged Windows host and public generic-demo host both passed browser integration checks.
-Three host unit tests and display-policy tests passed.
-Physical wireless display and camera streaming were not tested. Camera choices are unconfigured placeholders.
+Vital Lab camera integration - 22 November 2026
+
+Passed: host packet sanitizing, audit persistence, independent VIP presentation; camera add/rename/remove; session-only password omission; Windows user encryption round trip; one instructor and VIP video rendering with synthetic moving frames; viewer camera-settings GET/POST denied; public catalog excludes credentials; switching away releases video; dynamic additional camera/removal; no JavaScript errors.
+
+Packaged decoder/JPEG encoder self-check passed. Existing compact UI and display-policy tests passed previously.
+
+Clinic 1 Tapo RTSP and ONVIF ports were reachable and the separate authenticated preview received real video. The new integrated Clinic 1 view still needs the camera login entered locally and its on-site acceptance check. No camera credentials or host records are included in the public source. No audio or recording is implemented. Up to 12 named entries is a configuration limit, not a tested simultaneous-feed capacity.

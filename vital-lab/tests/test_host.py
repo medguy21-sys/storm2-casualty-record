@@ -1,3 +1,6 @@
+import sys
+from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import importlib.util,tempfile,unittest,json
 from pathlib import Path
 spec=importlib.util.spec_from_file_location('host',Path(__file__).resolve().parents[1]/'host.py');m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)

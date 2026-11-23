@@ -3,6 +3,7 @@ import argparse,csv,hashlib,html,io,json,math,os,secrets,socket,sqlite3,subproce
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler,ThreadingHTTPServer
 from urllib.parse import urlparse,parse_qs
+from camera_service import CameraManager
 ROOT=Path(getattr(sys,'_MEIPASS',Path(__file__).resolve().parent));LOCK=threading.RLock()
 CAMERAS={'gopro':'GoPro','patient':'Patient','clinic1':'Clinic 1','clinic2':'Clinic 2'}
 def sanitize_packet(p):
@@ -15,7 +16,7 @@ def sanitize_packet(p):
  out['beds'] += [None]*(8-len(out['beds']));return out
 class Relay:
  def __init__(self,path):
-  self.db=sqlite3.connect(path,check_same_thread=False);self.db.executescript('CREATE TABLE IF NOT EXISTS settings(k TEXT PRIMARY KEY,v TEXT);CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY,body TEXT);CREATE TABLE IF NOT EXISTS latest(id INTEGER PRIMARY KEY,body TEXT);')
+  self.cameras=CameraManager(Path(path).parent);self.db=sqlite3.connect(path,check_same_thread=False);self.db.executescript('CREATE TABLE IF NOT EXISTS settings(k TEXT PRIMARY KEY,v TEXT);CREATE TABLE IF NOT EXISTS events(id TEXT PRIMARY KEY,body TEXT);CREATE TABLE IF NOT EXISTS latest(id INTEGER PRIMARY KEY,body TEXT);')
   self.tokens={}
   for role in ('admin','viewer'):
    row=self.db.execute('SELECT v FROM settings WHERE k=?',(role,)).fetchone();self.tokens[role]=row[0] if row else secrets.token_urlsafe(24);self.db.execute('INSERT OR REPLACE INTO settings VALUES(?,?)',(role,self.tokens[role]))
@@ -31,17 +32,17 @@ class Relay:
   self.db.commit()
  def set_vip(self,d):
   target=d.get('target');mode=d.get('mode');bed=d.get('bed',1);count=d.get('count',8);camera=d.get('camera','gopro')
-  if target not in ('all','vip1','vip2','vip3') or mode not in ('Clinic','Truck','Field','Camera') or type(bed) is not int or not 1<=bed<=8 or type(count) is not int or count not in (2,4,8) or camera not in CAMERAS:raise ValueError('Invalid VIP view selection')
+  if target not in ('all','vip1','vip2','vip3') or mode not in ('Clinic','Truck','Field','Camera') or type(bed) is not int or not 1<=bed<=8 or type(count) is not int or count not in (2,4,8) or camera not in {c['id'] for c in self.cameras.catalog()}:raise ValueError('Invalid VIP view selection')
   revision=max(p.get('revision',0) for p in self.presentations.values())+1;utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
   for channel in self.presentations if target=='all' else [target]:self.presentations[channel]=dict(mode=mode,count=count,bed=bed,camera=camera,revision=revision,updatedUTC=utc)
   self.db.execute("INSERT OR REPLACE INTO settings VALUES('vip-presentations',?)",(json.dumps(self.presentations),))
   seconds=d.get('seconds',self.packet.get('seconds',0) if self.packet else 0)
   if not isinstance(seconds,(int,float)) or not math.isfinite(seconds) or not 0<=seconds<=8640000:seconds=0
-  label='Camera '+CAMERAS[camera]+' (not configured)' if mode=='Camera' else str(count)+'-bed overview' if mode=='Clinic' else 'Bed '+str(bed)+' '+mode
+  label='Camera '+next(c['label'] for c in self.cameras.catalog() if c['id']==camera) if mode=='Camera' else str(count)+'-bed overview' if mode=='Clinic' else 'Bed '+str(bed)+' '+mode
   event=dict(id='vip-'+secrets.token_urlsafe(18),type='display',bed=bed,seconds=seconds,message='VIP view: '+target+' → '+label,receivedUTC=utc)
   self.db.execute('INSERT INTO events VALUES(?,?)',(event['id'],json.dumps(event)));self.db.commit()
   return dict(ok=True,presentations=self.presentations)
- def view(self):return dict(packet=self.packet,ageSeconds=None if self.received is None else time.monotonic()-self.received,presentations=self.presentations,cameras=[dict(id=k,label=v,configured=False) for k,v in CAMERAS.items()],events=[json.loads(x) for x, in reversed(self.db.execute('SELECT body FROM events ORDER BY rowid DESC LIMIT 150').fetchall())])
+ def view(self):return dict(packet=self.packet,ageSeconds=None if self.received is None else time.monotonic()-self.received,presentations=self.presentations,cameras=self.cameras.catalog(),events=[json.loads(x) for x, in reversed(self.db.execute('SELECT body FROM events ORDER BY rowid DESC LIMIT 150').fetchall())])
  def inventory(self):
   if self.inventory_cache is not None and time.monotonic()-self.inventory_at<8:return self.inventory_cache
   try:
@@ -72,6 +73,10 @@ class Handler(BaseHTTPRequestHandler):
    if u.path=='/favicon.ico':return self.reply(204,b'','image/x-icon')
    if u.path=='/':return self.reply(200,'<h1>Darkwoods observer relay</h1><p>Use your instructor-provided link.</p>','text/html')
    role=self.auth(q)
+   if u.path=='/api/cameras':
+    if role!='admin':raise PermissionError('Camera settings are host-only')
+    return self.reply(200,{'cameras':RELAY.cameras.admin()})
+   if u.path=='/api/camera/stream':return RELAY.cameras.stream(self,q.get('id',[''])[0])
    if u.path=='/api/inventory':
     if role!='admin':raise PermissionError('Host-only inventory')
     return self.reply(200,RELAY.inventory())
@@ -97,7 +102,7 @@ class Handler(BaseHTTPRequestHandler):
  def do_POST(self):
   try:
    action=urlparse(self.path).path
-   if action not in ('/api/publish','/api/vip'):raise PermissionError('No observer control API')
+   if action not in ('/api/publish','/api/vip','/api/cameras'):raise PermissionError('No observer control API')
    origin=self.headers.get('Origin')
    if origin and urlparse(origin).netloc!=self.headers.get('Host'):raise PermissionError('Cross-origin write refused')
    if self.auth(parse_qs(urlparse(self.path).query))!='admin':raise PermissionError('Observers cannot publish or control patients')
@@ -106,14 +111,18 @@ class Handler(BaseHTTPRequestHandler):
    if not 0<n<=2000000:raise ValueError('Invalid body size')
    d=json.loads(self.rfile.read(n))
    with LOCK:
-    if action=='/api/vip':result=RELAY.set_vip(d)
+    if action=='/api/cameras':result=RELAY.cameras.save(d)
+    elif action=='/api/vip':result=RELAY.set_vip(d)
     else:RELAY.publish(d);result={'ok':True}
    self.reply(200,result)
   except PermissionError as e:self.reply(403,{'error':str(e)})
   except (ValueError,TypeError,KeyError) as e:self.reply(409,{'error':str(e)})
 def main():
  global RELAY,LAN,PORT
- ap=argparse.ArgumentParser();ap.add_argument('--port',type=int,default=8782);ap.add_argument('--data');ap.add_argument('--no-browser',action='store_true');a=ap.parse_args();PORT=a.port
+ ap=argparse.ArgumentParser();ap.add_argument('--check-video',action='store_true');ap.add_argument('--port',type=int,default=8782);ap.add_argument('--data');ap.add_argument('--no-browser',action='store_true');a=ap.parse_args();PORT=a.port
+ if a.check_video:
+  import av
+  codec=av.CodecContext.create('mjpeg','w');codec.width=320;codec.height=240;codec.pix_fmt='yuvj420p';codec.open();frame=av.VideoFrame(320,240,'yuvj420p');assert bytes(codec.encode(frame)[0])[:2]==b'\xff\xd8';print('Video decoder and JPEG encoder available',flush=True);return
  home=Path(sys.executable).parent if getattr(sys,'frozen',False) else Path(__file__).parent;data=Path(a.data) if a.data else home/'Observer-Data';data.mkdir(parents=True,exist_ok=True);RELAY=Relay(data/'observer.sqlite3')
  try:
   s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);s.connect(('192.0.2.1',80));LAN=s.getsockname()[0];s.close()
