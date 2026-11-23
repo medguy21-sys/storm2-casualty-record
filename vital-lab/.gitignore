@@ -1,0 +1,7 @@
+Observer-Data/
+__pycache__/
+*.pyc
+*.sqlite3*
+*.spec
+build/
+dist/

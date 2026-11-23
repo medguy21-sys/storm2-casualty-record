@@ -1,0 +1,8 @@
+Validated 22 November 2026 in headless Microsoft Edge.
+Compact instructor layout: 1100, 768 and 600 pixel widths; no horizontal overflow.
+Clock, intervention marking, camera picker, tools and pane arrangement passed.
+VIP1/VIP2 independent presentation and all-screen selection passed. Viewer write access refused.
+Student patient, vitals and destination preserved while VIP presentation changed.
+Packaged Windows host and public generic-demo host both passed browser integration checks.
+Three host unit tests and display-policy tests passed.
+Physical wireless display and camera streaming were not tested. Camera choices are unconfigured placeholders.

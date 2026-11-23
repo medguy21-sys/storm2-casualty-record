@@ -72,3 +72,8 @@ Replace `index.html` with the new version. Export records first (see above).
 ## Contact
 
 Paul Loos, VP of Special Projects, Ragged Edge Solutions
+
+
+## Vital Lab simulator
+
+The neutral simulator is in [`vital-lab/`](vital-lab/README.md). Open [`vital-lab/index.html`](vital-lab/index.html) locally for the self-contained instructor demo, or run its local host for read-only VIP screens and Windows display inventory. The documentation application above is preserved and remains a separate frontend.
