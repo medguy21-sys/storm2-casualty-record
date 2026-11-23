@@ -32,7 +32,7 @@ class Relay:
   self.db.commit()
  def set_vip(self,d):
   target=d.get('target');mode=d.get('mode');bed=d.get('bed',1);count=d.get('count',8);camera=d.get('camera','gopro')
-  if target not in ('all','vip1','vip2','vip3') or mode not in ('Clinic','Truck','Field','Camera') or type(bed) is not int or not 1<=bed<=8 or type(count) is not int or count not in (2,4,8) or camera not in {c['id'] for c in self.cameras.catalog()}:raise ValueError('Invalid VIP view selection')
+  if target not in ('all','vip1','vip2','vip3') or mode not in ('Clinic','Truck','Field','Camera') or type(bed) is not int or not 1<=bed<=8 or type(count) is not int or count not in (2,4,8) or (mode=='Camera' and camera not in {c['id'] for c in self.cameras.catalog()}):raise ValueError('Invalid VIP view selection')
   revision=max(p.get('revision',0) for p in self.presentations.values())+1;utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime())
   for channel in self.presentations if target=='all' else [target]:self.presentations[channel]=dict(mode=mode,count=count,bed=bed,camera=camera,revision=revision,updatedUTC=utc)
   self.db.execute("INSERT OR REPLACE INTO settings VALUES('vip-presentations',?)",(json.dumps(self.presentations),))
@@ -71,7 +71,7 @@ class Handler(BaseHTTPRequestHandler):
    if u.path in ('/src/display-template.js','/src/policy.js','/src/journey.js','/src/operator-ui.js'):
     return self.reply(200,(ROOT/u.path.lstrip('/')).read_bytes(),'text/javascript')
    if u.path=='/favicon.ico':return self.reply(204,b'','image/x-icon')
-   if u.path=='/':return self.reply(200,'<h1>Darkwoods observer relay</h1><p>Use your instructor-provided link.</p>','text/html')
+   if u.path=='/':return self.reply(200,'<h1>Vital Lab observer relay</h1><p>Use your instructor-provided link.</p>','text/html')
    role=self.auth(q)
    if u.path=='/api/cameras':
     if role!='admin':raise PermissionError('Camera settings are host-only')
@@ -86,7 +86,7 @@ class Handler(BaseHTTPRequestHandler):
      f=io.StringIO(newline='');w=csv.writer(f);w.writerow(['type','bed','scenario_seconds','message','received_utc'])
      for x, in RELAY.db.execute('SELECT body FROM events ORDER BY rowid'):
       e=json.loads(x);vals=[e['type'],e['bed'],e['seconds'],e['message'],e['receivedUTC']];w.writerow(["'"+str(v) if str(v).startswith(('=','+','-','@')) else v for v in vals])
-     return self.reply(200,'\ufeff'+f.getvalue(),'text/csv','darkwoods-observer-events.csv')
+     return self.reply(200,'\ufeff'+f.getvalue(),'text/csv','vital-lab-observer-events.csv')
    files={'/instructor':'index.html','/observer':'observer.html','/display':'display.html','/guide':'guide.html','/journey.svg':'journey.svg'}
    if u.path=='/instructor' and role!='admin':raise PermissionError('Instructor is private')
    if u.path not in files:raise ValueError('Not found')
