@@ -68,7 +68,7 @@ class Handler(BaseHTTPRequestHandler):
  def do_GET(self):
   try:
    u=urlparse(self.path);q=parse_qs(u.query)
-   if u.path in ('/src/display-template.js','/src/policy.js','/src/journey.js','/src/operator-ui.js'):
+   if u.path in ('/src/display-template.js','/src/policy.js','/src/journey.js','/src/operator-ui.js','/src/camera-dock.js'):
     return self.reply(200,(ROOT/u.path.lstrip('/')).read_bytes(),'text/javascript')
    if u.path=='/favicon.ico':return self.reply(204,b'','image/x-icon')
    if u.path=='/':return self.reply(200,'<h1>Vital Lab observer relay</h1><p>Use your instructor-provided link.</p>','text/html')

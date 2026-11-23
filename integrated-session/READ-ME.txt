@@ -1,0 +1,42 @@
+VITAL LAB - INTEGRATED SESSION
+
+One instructor Surface hosts the patient state, shared clock, student charting and camera/VIP views. Students use their own browsers on the same classroom Wi-Fi. The documentation frontend is adapted from the supplied STORM2 Unified Casualty Record; its 12 clinical sections and English/Ukrainian toggle remain available.
+
+START
+Download START-Vital-Lab-Integrated.exe to its own local folder and run it. Keep the host running. It opens the instructor dashboard. Use a fresh local folder for a new exercise; restarting an existing folder recovers that session paused. Local records live in Unified-Data beside the EXE. Export before moving folders or clearing browser data.
+The private course edition starts Patient 5-C paused. The public GitHub edition uses a generic demonstration case. Course scripts and camera credentials are excluded from GitHub.
+
+INSTRUCTOR
+The console contains Setup/Run tabs, phase prompts/checklists, the shared clock, Mark Intervention and vital controls. Camera previews appear in a collapsible bottom strip. Tap a camera to enlarge it; collapse the strip to stop those previews. Offscreen thumbnails stop loading. Each active camera has one shared decoder for its viewers.
+Use Students to obtain Student A and B links. Open each link on its own Surface, enter the student name, and wait for Writer / saved or Read only. Student A starts as writer. Hand over patient freezes manual editing until Student B accepts; the chart and patient ID stay together. Instructor writer recovery is logged.
+Use Displays to select a connected extended monitor and open a single-bed SYNCO view or a 2/4/8-bed board. Unassigned beds stay empty. Use Extend in Windows first. Fullscreen can require a click or F11. The ventilator Show/Hide overlay works on the shared student monitor; open that monitor first.
+Assign additional patients under Session setup. Each bed has its own chart and writer. Case recording/replay remains in the standalone simulator; the integrated edition holds the shared session instead of letting a device-local replay reset it.
+
+DOCUMENTATION MODE - Session setup
+Manual entry only: students read the separate monitor and type their observations. No capture button or live readings panel is shown in the chart app.
+One-tap capture: the writer chooses when to copy displayed readings into an observation.
+Live vitals feed + capture: the chart app also shows the same available readings as the monitor. Automatic charting is optional and off by default.
+To auto-chart: choose Live vitals feed, enable Automatically chart live readings and choose an interval. The host writes one observation per assigned patient on the shared scenario clock. Pausing the clock pauses auto-charting. A delayed host records the current snapshot rather than inventing missed samples. Returning to Manual or One-tap capture turns auto-charting off.
+Automatic rows are retained as read-only original observations; add a separate corrected observation if needed. Student edits never change patient physiology. Automatic rows arriving while students type are merged without overwriting their manual draft.
+
+WHAT IS CAPTURED
+HR/SpO2/RR/ETCO2 only when their simulated signals are available. BP is the last completed displayed measurement, with its measurement time; no unmeasured BP target is copied. During a cuff cycle BP remains blank. Camera images/audio are not recorded or included in clinical exports.
+Every record/event is linked to the session and patient IDs. Student-stated observation time, server documentation time and UTC receipt are distinct. Sources distinguish student-entered, one-tap monitor capture, edited capture and automatic feed. Corrections/deletions retain before/after audit revisions. Saved camera passwords are encrypted for the host Windows account and never sent to student charts or exports.
+
+DEBRIEF / EXPORT
+Student AAR: clinical record and relevant exercise timeline, without instructor-only notes.
+Command summary: team-level activity counts; excludes names and free-text notes. Automatic/captured fields are separated from student-entered/edited field comparisons. Activity counts alone do not establish improvement or patient outcome benefit.
+Instructor detail: complete review report. HTML reports can be printed to PDF in the browser.
+Comparison CSV: charted and displayed values, difference, source, patient/entry IDs, time basis, documentation delay, reference sample age and BP measurement time. Manual observations use the latest available monitor history at or before the stated time, with a maximum 2-second history gap. Missing/unusable values remain distinguishable; differences are review prompts, not clinical scores.
+All chart sections CSV: structured field/entry rows with stable IDs and JSON detail.
+Combined events CSV: all evidence streams on the common clock.
+Full session JSON: charts, full revisions, monitor history and comparisons, with access tokens removed. Restart recovery uses the local SQLite database; JSON restore/import is not yet provided.
+
+OFFLINE AND PERFORMANCE
+The student chart holds editing if its host connection is lost. Unsent drafts remain on that device and can be downloaded; conflicts require deliberate review and server-chart reload. Repeated submissions use the same request ID and cannot duplicate captures. Automatic observations do not invalidate a student's manual revision.
+Routine updates omit unchanged chart bodies and unselected patients' records. Viewer monitors receive readings without student charts or instructor answers. Voice features retain the original app's browser/service requirements; typing is the supported baseline.
+
+TESTING
+See TESTED.txt. Physical testing across two student Surfaces, the wireless M4 and multiple simultaneous cameras remains a classroom acceptance step.
+
+Audit history stores before/after changed fields and entries rather than duplicate complete charts on every keystroke. Initial charts and original captures are retained.

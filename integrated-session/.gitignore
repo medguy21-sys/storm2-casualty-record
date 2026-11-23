@@ -1,0 +1,10 @@
+Unified-Data/
+Course-Data/
+Observer-Data/
+__pycache__/
+*.pyc
+*.sqlite3*
+cameras-private.json
+build/
+dist/
+*.spec

@@ -77,3 +77,8 @@ Paul Loos, VP of Special Projects, Ragged Edge Solutions
 ## Vital Lab simulator
 
 The neutral simulator is in [`vital-lab/`](vital-lab/README.md). Open [`vital-lab/index.html`](vital-lab/index.html) locally for the self-contained instructor demo, or run its local host for read-only VIP screens and Windows display inventory. The documentation application above is preserved and remains a separate frontend.
+
+
+## Integrated classroom session
+
+[`integrated-session/`](integrated-session/README.md) connects student documentation, the simulator, shared clock, patient handover, optional live/automatic observations, camera previews and combined debrief exports through one local host. The existing standalone apps above are preserved. Public cases are generic demonstrations; private course libraries and host records are excluded.

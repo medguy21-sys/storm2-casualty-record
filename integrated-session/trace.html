@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Vital Lab · SYNCO XView M4 single-patient</title>
+<style>*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#000;color:#f4f4f4;font-family:Arial,sans-serif;overflow:hidden}main{position:fixed;left:50%;top:50%;margin:0;display:grid;grid-template-rows:6% 94%;padding:2%;container-type:inline-size;transform:translate(-50%,-50%) rotate(180deg);background:#080b09}header{display:flex;gap:5px;align-items:center;font-size:3cqw;min-width:0;color:#d7ddd9}#patient{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}#status{white-space:nowrap}#board{display:grid;min-height:0;grid-template-columns:1fr;grid-template-rows:17% 17% 27% 39%;grid-template-areas:'spo' 'hr' 'bp' 'co2';gap:0}.metric,.bp{min-height:0;overflow:hidden;border:0;padding:0;position:relative}.metric{display:flex;align-items:baseline;gap:3cqw}.metric label{color:#f4f4f4;font-size:8cqw;min-width:24cqw}.metric strong{font-size:21cqw;line-height:1;font-weight:500;letter-spacing:-.055em}.metric small{font-size:6cqw}#spoCell{grid-area:spo;color:#55b776}#hrCell{grid-area:hr;color:#ffe43c}.bp{grid-area:bp;display:grid;grid-template-rows:26% 48% 26%;align-content:start}.bp label{font-size:8cqw;color:white}.bp label small{font-size:5cqw}.bp strong{font-size:19cqw;color:#55b776;line-height:1;font-weight:500;letter-spacing:-.045em}#bpTime{font-size:3.4cqw;position:absolute;bottom:3px;right:0;color:#b3bdb6}#autoBP{font-size:7cqw;line-height:1;color:white}#co2Box{grid-area:co2;color:#ffe43c;display:flex;align-items:baseline;padding-bottom:0;gap:2cqw}#co2Box label{font-size:6cqw;min-width:24cqw}#co2Box strong{font-size:17cqw}#co2Box small{font-size:4cqw}#co2RR{position:absolute;right:1cqw;top:23%;font-size:4cqw;color:#f4f4f4}#capno{position:absolute;left:0;bottom:0;width:100%;height:65%}button{cursor:pointer;font:13px Arial;border:1px solid #aab8b0;border-radius:5px;padding:5px 9px;background:#17211b;color:white}#fullscreen,#rotateDisplay{position:fixed;z-index:20;right:6px;top:6px}#rotateDisplay{top:40px}body.offline #status{color:#ffbe79}#board{grid-template-rows:29% 15% 25% 31%}#spoCell{align-items:baseline;padding-bottom:0}#spoCell strong{font-size:20cqw}#spoCell label{font-size:7cqw}#pleth{position:absolute;left:0;bottom:0;width:100%;height:40%}#hrCell strong{font-size:18cqw}#hrCell label{font-size:7cqw}.bp{grid-template-rows:23% 55% 22%}.bp label{font-size:6cqw}.bp strong{font-size:17cqw}#autoBP{font-size:5cqw}#bpTime{font-size:3cqw}#co2Box strong{font-size:15cqw}#co2Box label{font-size:6cqw}#capno{height:48%}#co2RR{top:36%}
+#board{grid-template-rows:25% 13% 21% 25% 16%;grid-template-areas:"spo" "hr" "bp" "co2" "ecg"}#spoCell strong{font-size:17cqw}#hrCell strong{font-size:16cqw}.bp strong{font-size:14cqw}#ecgBox{grid-area:ecg;position:relative;min-height:0;overflow:hidden;color:#8cf4bb;border-top:1px solid #203328}#ecgLabel{position:absolute;top:1px;left:0;font-size:3.3cqw}#ecg{position:absolute;bottom:0;left:0;width:100%;height:78%}#ecgStatus{position:absolute;left:2cqw;top:40%;font-size:4cqw;z-index:1;background:#080b09}#ecgStatus:empty{display:none}
+#capno{height:50%}#capnoScale{position:absolute;left:0;top:45%;font-size:2.8cqw;color:#aab8ad}#capnoStatus{position:absolute;left:2cqw;bottom:15%;z-index:1;font-size:4cqw;color:#c9d5cc;background:#080b09}#capnoStatus:empty{display:none}#co2RR{top:32%}
+main{container-type:size;padding:1.2%;grid-template-rows:3% 97%;gap:0}header{font-size:min(2.2cqw,1.8cqh)}#board{grid-template-rows:26% 16% 22% 23% 13%;row-gap:0}.metric label{font-size:min(6cqw,4cqh);min-width:22cqw}.metric small{font-size:min(4cqw,3cqh)}#spoCell{padding-top:1cqh;gap:3cqw}#spoCell strong{font-size:min(28cqw,16cqh);line-height:.9}#spoCell label{font-size:min(6cqw,4cqh)}#pleth{height:35%;bottom:1cqh}#hrCell{align-items:center;gap:3cqw}#hrCell strong{font-size:min(28cqw,16cqh);line-height:.9}#hrCell label{font-size:min(6cqw,4cqh)}.bp{grid-template-rows:18% 62% 20%;padding-top:1cqh}.bp label{font-size:min(5cqw,3cqh)}.bp label small{font-size:min(3.5cqw,2.5cqh)}.bp strong{font-size:min(22cqw,13cqh);line-height:.95;letter-spacing:-.055em}#autoBP{font-size:min(3.8cqw,2.6cqh);align-self:center}#bpTime{font-size:min(2.6cqw,1.7cqh);bottom:0}#co2Box{padding-top:1cqh;gap:2cqw}#co2Box strong{font-size:min(24cqw,12cqh);line-height:.9}#co2Box label{font-size:min(5cqw,3.5cqh)}#co2Box small{font-size:min(3.5cqw,2.5cqh)}#capno{height:43%;bottom:0}#capnoScale{top:51%;font-size:min(2.5cqw,1.8cqh)}#co2RR{top:20%;font-size:min(3.5cqw,2.5cqh)}#ecgLabel{font-size:min(3cqw,2cqh)}#ecg{height:78%}#ecgStatus,#capnoStatus{font-size:min(4cqw,3cqh)}
+main{grid-template-rows:clamp(32px,6%,60px) minmax(0,1fr)}header{gap:8px;font-size:clamp(10px,2.8cqw,18px);overflow:hidden}#patient{flex:1;min-width:0}#status{flex:0 0 auto}#fullscreen{position:static;display:block;flex:0 0 auto;width:clamp(120px,32cqw,320px);min-height:30px;max-height:100%;font-size:clamp(11px,3cqw,20px);font-weight:700;padding:4px 12px;border:2px solid #d5e7db;border-radius:6px;background:#204936;color:#fff;white-space:nowrap}#rotateDisplay{top:auto;bottom:6px;font-size:11px;opacity:.85}
+#monitorSound{position:fixed;right:6px;bottom:40px;z-index:20;min-height:30px;padding:5px 10px;font-size:12px;background:#173c2b;border:1px solid #a8cbb5;color:white}
+</style><style>body.tile #fullscreen,body.tile #rotateDisplay,body.tile #monitorSound{display:none}</style></head><body class="offline"><main>
+<header><b id="bedLabel">SIMULATED PATIENT</b><span id="patient">Waiting for instructor</span><span id="status" role="status">Offline</span><button id="fullscreen" aria-label="Full screen">Full screen</button></header>
+<section id="board">
+<div class="metric" id="hrCell"><label>HR</label><strong id="hr">—</strong><small>/min</small></div>
+<div class="metric" id="spoCell"><label>SpO₂</label><strong id="spo2">—</strong><small>%</small><canvas id="pleth" aria-label="SpO2 pleth waveform"></canvas></div>
+<div class="metric" id="co2Box"><label>ETCO₂</label><strong id="etco2">—</strong><small>mmHg</small><span id="co2RR">RR <b id="rr">—</b></span><span id="capnoScale"></span><span id="capnoStatus"></span><canvas id="capno" aria-label="Capnogram"></canvas></div><div class="bp"><label>NIBP <small>mmHg</small></label><strong id="bp">—/—</strong><span id="bpTime">No measurement</span><span id="autoBP">AUTO | 5 MIN</span></div>
+<div id="ecgBox"><span id="ecgLabel">ECG - Lead II | 6 s</span><span id="ecgStatus"></span><canvas id="ecg" aria-label="Simulated three-lead ECG selected lead"></canvas></div></section></main><script>
+const $=id=>document.getElementById(id), key=new URLSearchParams(location.search).get('key')||'';
+let packet=null,received=0,session='',sending=false,waitingUntil=0,errorText='';
+let beat=0,breath=0,lastScenario=null,lastFrame=0,history=[];
+function fresh(){return packet && performance.now()-received<2200}
+function seconds(){return packet?packet.seconds+(packet.running?(performance.now()-received)/1000:0):0}
+function stamp(t){return String(Math.floor(t/60)).padStart(2,'0')+':'+String(Math.floor(t%60)).padStart(2,'0')}
+function render(){
+ const live=fresh(),bed=packet?.beds[0],active=live && !!bed?.caseId,v=bed?.vitals||{};
+ document.body.classList.toggle('offline',!live);
+ document.body.classList.toggle('capno',active && !!bed.capnoAttached);
+ $('status').textContent=live?(packet.running?'Running':'Clock paused'):'Offline';
+ $('patient').textContent=live?(bed?.patient||'Unassigned'):'Waiting for instructor';
+ $('hr').textContent=active && bed.ecgAttached!==false?(v.hr??'—'):'—';
+ $('spo2').textContent=active && bed.spo2Attached!==false?(v.spo2??'—'):'—';
+ $('etco2').textContent=active && bed.capnoAttached?(v.etco2??'—'):'—';
+ $('rr').textContent=active && bed.capnoAttached?(v.rr??'—'):'—';
+ const n=active?bed.nibp:null; const left=bed?.nextAutoBP==null?null:Math.max(0,bed.nextAutoBP-seconds()); $('autoBP').textContent=n?.measuring?'AUTO | CYCLING':left==null?'AUTO | ON START':'AUTO | NEXT '+stamp(left);
+ $('bp').textContent=n && Number.isFinite(n.sbp) && !n.measuring?n.sbp+'/'+n.dbp:'—/—';
+ $('bpTime').textContent=n?.measuring?'Cuff cycling…':n && Number.isFinite(n.sbp)?'Measured '+stamp(n.seconds):errorText || 'No measurement';
+}
+window.addEventListener('message',e=>{
+ if(e.source!==parent || e.data?.type!=='state')return;
+ const next=e.data;document.getElementById('bedLabel').textContent='BED '+next.beds[0].number+' · SIM'; if(Number.isFinite(next.orientation)&&next.orientation!==angle){angle=next.orientation;fitPortrait();} const id=next.token+'/'+next.beds[0].caseId;
+ if(id!==session){session=id;history=[];lastScenario=null;beat=breath=0;waitingUntil=0;errorText=''}
+ if(next.beds[0].nibp?.measuring)waitingUntil=0;
+ packet=next;received=performance.now();render();
+});
+$('fullscreen').onclick=async()=>{enableMonitorAudio();try{const d=parent.document;if(d.fullscreenElement)await d.exitFullscreen();else await d.documentElement.requestFullscreen();}catch{$('fullscreen').textContent='Use F11';}}; parent.document.addEventListener('fullscreenchange',()=>{$('fullscreen').textContent=parent.document.fullscreenElement?'Exit full screen':'Full screen';});
+
+const capnoModes=['normal','bronchospasm','descending','cardiogenic','pigtail','cleft','rebreathing','esophageal'];
+let traceSignature='',traceSeeded=false,lastStateRequest=0;
+function capnoSample(p,end,mode='normal',hr=80,t=0){
+ if(!Number.isFinite(end)||end<=0)return 0;
+ const smooth=x=>{x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)},g=(x,c,w)=>Math.exp(-(((x-c)/w)**2));
+ let base=p<.08?0:p<.15?smooth((p-.08)/.07)*.9:p<.63?.9+.1*(p-.15)/.48:p<.70?1-smooth((p-.63)/.07):0;
+ if(mode==='bronchospasm')base=p<.08?0:p<.62?Math.pow((p-.08)/.54,.66):p<.70?1-smooth((p-.62)/.08):0;
+ if(mode==='descending')base=p<.08?0:p<.15?smooth((p-.08)/.07)*1.22:p<.63?1.22-.22*(p-.15)/.48:p<.70?1-smooth((p-.63)/.07):0;
+ if(mode==='esophageal')base=p<.65?Math.pow(Math.sin(Math.PI*p/.65),1.3):0;
+ if(mode==='cleft')base=Math.max(0,base-.34*g(p,.46,.035));
+ if(mode==='pigtail')base+=.15*g(p,.60,.027);
+ if(mode==='cardiogenic'&&p>.15&&p<.70)base=Math.max(0,base+.035*Math.sin(2*Math.PI*Math.max(0,hr)/60*t));
+ const inspired=mode==='rebreathing'?Math.min(8,end*.25):0;
+ return Math.max(0,inspired+base*(end-inspired));
+}
+function capnoStatus(bed){const v=bed?.vitals||{};return !bed?.capnoAttached?'Monitor not attached':!Number.isFinite(v.etco2)||!Number.isFinite(v.rr)?'Set ETCO2 and RR':v.rr<=0||v.etco2<=0?'No breath signal':''}
+function plethSample(p,b,t,mode='normal'){
+ const g=(x,c,w)=>Math.exp(-(((x-c)/w)**2)),kernel=x=>x<=0?0:Math.pow(x/.17,2)*Math.exp(2*(1-x/.17));
+ let wave=Math.max(0,kernel(p)-kernel(1)*p-.08*g(p,.36,.027)+.055*g(p,.43,.05));
+ const respiratory=Math.sin(2*Math.PI*b);
+ if(mode==='low')wave*=.12;
+ if(mode==='baseline'||mode==='combined')wave+=.14*respiratory;
+ if(mode==='amplitude'||mode==='combined')wave*=.7+.3*respiratory;
+ if(mode==='noise')wave=.35*wave+.12*Math.sin(t*73)+.075*Math.sin(t*137)+.06*Math.sin(t*211)+.12;
+ if(mode==='motion')wave=wave*(.55+.4*Math.sin(t*2.1))+.19*Math.sin(t*5.7)+.12*Math.sin(t*14.3)*Math.pow(Math.sin(t*.9),4)+.12;
+ if(mode==='fading')wave*=Math.pow(.5+.5*Math.sin(t*.7),4);
+ return Math.max(-.16,Math.min(1.25,wave));
+}
+function plethPhaseDelta(dt,hr,rr,b,mode){const rate=Math.max(0,hr||0)/60,omega=2*Math.PI*Math.max(0,rr||0)/60;return dt*rate+((mode==='rsa'||mode==='combined')&&omega>0?.1*rate*(Math.cos(2*Math.PI*b)-Math.cos(2*Math.PI*b+omega*dt))/omega:0)}
+function ecgSample(p,t,rhythm,lead='II',hr=80){
+ if(!rhythm)return null;
+ let y=0;const g=(c,w,a)=>a*Math.exp(-(((p-c)/w)**2));
+ if(rhythm==='vf')y=.18*Math.sin(t*39)+.11*Math.sin(t*61)+.07*Math.sin(t*23);
+ else if(rhythm==='asystole')y=.002*Math.sin(t*37);
+ else if(hr>0)y=(rhythm==='af'?.025*Math.sin(t*33)+.014*Math.sin(t*57):g(.16,.035,.12))-g(.34,.012,.18)+g(.37,.009,1)-g(.40,.014,.3)+g(.62,.07,.25);
+ const leadII=y,leadI=.65*y;return lead==='I'?leadI:lead==='III'?leadII-leadI:leadII;
+}
+function cardiacPhaseDelta(dt,hr,rr,b,mode,rhythm,t){const rate=Math.max(0,hr||0)/60,irregular=rhythm==='af'?rate*(.18*(Math.cos(t*2.3)-Math.cos((t+dt)*2.3))/2.3+.1*(Math.cos(t*5.1)-Math.cos((t+dt)*5.1))/5.1):0;return plethPhaseDelta(dt,hr,rr,b,mode)+irregular}
+function sampleAt(t,p,b,bed){const v=bed?.vitals||{};let end=v.etco2;if(bed?.capnoPattern==='esophageal'){if(t<bed.capnoPatternAt)return {t,p:null,c:null,e:bed.ecgAttached?ecgSample(p,t,bed.rhythm,bed.ecgLead,v.hr):null};const count=Math.floor(Math.max(0,t-bed.capnoPatternAt)*Math.max(0,v.rr||0)/60);end=count>=6?0:(bed.capnoBaseETCO2||0)*Math.exp(-count*.9)} const pulse=bed?.spo2Attached!==false&&v.hr>0&&!['asystole','vf'].includes(bed.rhythm),valid=bed?.capnoAttached&&Number.isFinite(v.etco2)&&Number.isFinite(v.rr);return {t,e:bed.ecgAttached?ecgSample(p,t,bed.rhythm,bed.ecgLead,v.hr):null,p:pulse?plethSample(p,b,t,bed.plethPattern):null,c:valid?(v.rr>0?capnoSample(b,end,bed.capnoPattern,v.hr,t):0):null}}
+
+let monitorAudio=null,monitorAudioOn=false,monitorAudioChosen=false,monitorNoise=null,cuffSound=null,cuffSoundId='',previousAudioBeat=null,pulseBeepCount=0,cuffSoundCount=0;
+const realStudent=parent.document.getElementById('syncoStudent')?.contentWindow===window;
+const soundButton=realStudent?document.createElement('button'):null;
+if(soundButton){soundButton.id='monitorSound';soundButton.textContent='Sound off';soundButton.title='Enable quiet pulse and BP cuff sounds';soundButton.setAttribute('aria-pressed','false');document.body.append(soundButton);soundButton.onclick=()=>monitorAudioOn?muteMonitorAudio():enableMonitorAudio(true);}
+function soundLabel(){if(soundButton){soundButton.textContent=monitorAudioOn?'Sound on - mute':'Sound off';soundButton.setAttribute('aria-pressed',String(monitorAudioOn));}}
+function enableMonitorAudio(explicit=false){
+ if(!realStudent||(!explicit&&monitorAudioChosen))return;
+ monitorAudioChosen=true;
+ try{monitorAudio=monitorAudio||new(window.AudioContext||window.webkitAudioContext)();monitorAudio.resume().then(()=>{monitorAudioOn=true;previousAudioBeat=null;soundLabel()}).catch(()=>{monitorAudioOn=false;soundLabel()});}catch{if(soundButton)soundButton.textContent='Audio unavailable'}
+}
+function stopCuffAudio(release=false){
+ if(!cuffSound)return;const nodes=cuffSound;cuffSound=null;
+ for(const node of nodes){try{node.stop()}catch{}try{node.disconnect()}catch{}}
+ if(release&&monitorAudioOn&&monitorAudio?.state==='running'){
+  const t=monitorAudio.currentTime,n=monitorAudio.createBufferSource(),filter=monitorAudio.createBiquadFilter(),gain=monitorAudio.createGain();n.buffer=noiseBuffer();filter.type='highpass';filter.frequency.value=1100;gain.gain.setValueAtTime(.035,t);gain.gain.exponentialRampToValueAtTime(.0001,t+.32);n.connect(filter).connect(gain).connect(monitorAudio.destination);n.start();n.stop(t+.34);n.onended=()=>{n.disconnect();filter.disconnect();gain.disconnect()};
+ }
+}
+function muteMonitorAudio(){monitorAudioChosen=true;monitorAudioOn=false;previousAudioBeat=null;stopCuffAudio();monitorAudio?.suspend().catch(()=>{});soundLabel()}
+function noiseBuffer(){if(!monitorNoise){monitorNoise=monitorAudio.createBuffer(1,monitorAudio.sampleRate,monitorAudio.sampleRate);const a=monitorNoise.getChannelData(0);let seed=12345;for(let i=0;i<a.length;i++){seed=(1664525*seed+1013904223)>>>0;a[i]=seed/2147483648-1;}}return monitorNoise}
+function startCuffAudio(){
+ stopCuffAudio();const ctx=monitorAudio,n=ctx.createBufferSource(),filter=ctx.createBiquadFilter(),gain=ctx.createGain(),hum=ctx.createOscillator(),humGain=ctx.createGain(),lfo=ctx.createOscillator(),lfoGain=ctx.createGain();
+ n.buffer=noiseBuffer();n.loop=true;filter.type='bandpass';filter.frequency.value=420;filter.Q.value=.6;gain.gain.value=.055;lfo.frequency.value=8;lfoGain.gain.value=.016;lfo.connect(lfoGain).connect(gain.gain);n.connect(filter).connect(gain).connect(ctx.destination);hum.type='triangle';hum.frequency.value=95;humGain.gain.value=.012;hum.connect(humGain).connect(ctx.destination);n.start();hum.start();lfo.start();cuffSound=[n,hum,lfo,filter,gain,humGain,lfoGain];cuffSoundCount++;
+}
+function pulseBeep(){const ctx=monitorAudio,t=ctx.currentTime,o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=880;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.022,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+.045);o.connect(g).connect(ctx.destination);o.start();o.stop(t+.05);o.onended=()=>{o.disconnect();g.disconnect()};pulseBeepCount++}
+function monitorAudioTick(bed,live){
+ if(!monitorAudioOn||monitorAudio?.state!=='running')return;
+ if(!live){stopCuffAudio();previousAudioBeat=null;return}
+ const id=session+'/'+bed?.nibp?.startedAt;
+ if(bed?.nibp?.measuring){if(id!==cuffSoundId||!cuffSound){cuffSoundId=id;startCuffAudio()}}else if(cuffSound)stopCuffAudio(true);
+ const v=bed?.vitals||{},pulse=bed?.ecgAttached&&bed.rhythm&&!['vf','asystole'].includes(bed.rhythm)&&v.hr>0;
+ if(pulse&&previousAudioBeat!==null){const delta=(beat-previousAudioBeat+1)%1,toR=(.37-previousAudioBeat+1)%1;if(delta>0&&delta<.65&&toR>0&&toR<=delta)pulseBeep()}
+ previousAudioBeat=pulse?beat:null;
+}
+window.addEventListener('pagehide',()=>{stopCuffAudio();monitorAudio?.close().catch(()=>{})});
+
+function renderFrame(now){
+ if(now-lastStateRequest>250&&(!packet||now-received>200)){lastStateRequest=now;parent.postMessage({type:'synco-request-state'},'*');}
+ const live=fresh(),bed=packet?.beds[0],v=bed?.vitals||{},time=packet?(packet.traceSeconds??packet.seconds)+(performance.now()-received)/1000:0;
+ const sig=[session,bed?.ecgAttached,bed?.ecgLead,bed?.rhythm,bed?.plethPattern,bed?.spo2Attached,bed?.capnoAttached,bed?.capnoPattern,Number.isFinite(v.etco2),Number.isFinite(v.rr),bed?.capnoPattern==='esophageal'?bed.capnoPatternAt:''].join('/');
+ if(live&&(!traceSeeded||sig!==traceSignature)){
+  traceSignature=sig;traceSeeded=true;history=[];beat=((time*Math.max(0,v.hr||0)/60)%1+1)%1;breath=(((time-(bed?.capnoPattern==='esophageal'?bed.capnoPatternAt:0))*Math.max(0,v.rr||0)/60)%1+1)%1;
+  for(let i=-1200;i<=0;i++){const dt=i/100;history.push(sampleAt(time+dt,((beat+cardiacPhaseDelta(dt,v.hr,v.rr,breath,bed.plethPattern,bed.rhythm,time))%1+1)%1,((breath+dt*Math.max(0,v.rr||0)/60)%1+1)%1,bed))}lastScenario=time;
+ }
+ if(live&&lastScenario!==null&&time>lastScenario){
+  const elapsed=Math.min(time-lastScenario,.5),steps=Math.max(1,Math.ceil(elapsed*100));
+  for(let i=1;i<=steps;i++){beat=(beat+cardiacPhaseDelta(elapsed/steps,v.hr,v.rr,breath,bed.plethPattern,bed.rhythm,time-elapsed+elapsed*(i-1)/steps))%1;breath=(breath+elapsed/steps*Math.max(0,v.rr||0)/60)%1;history.push(sampleAt(time-elapsed+elapsed*i/steps,beat,breath,bed))}
+  let expired=0;while(expired<history.length&&history[expired].t<time-12)expired++;if(expired)history.splice(0,expired);
+ }
+ lastScenario=live?time:null;
+ if(now-lastFrame>30){lastFrame=now;render();monitorAudioTick(bed,live);
+  $('ecgLabel').textContent='ECG - Lead '+(bed?.ecgLead||'II')+' | 6 s';$('ecgStatus').textContent=!bed?.ecgAttached?'ECG leads off':!bed.rhythm?'Set ECG rhythm':'';const status=capnoStatus(bed);$('capnoStatus').textContent=status;
+  const ceiling=Math.max(60,Math.ceil((Math.max(0,v.etco2||0)*1.3)/20)*20);$('capnoScale').textContent='0-'+ceiling+' mmHg | 12 s';
+  for(const [id,color,field]of [['pleth','#55b776','p'],['capno','#ef6654','c'],['ecg','#8cf4bb','e']]){
+   const c=$(id);if(!c.clientWidth||!c.clientHeight)continue;
+   const scale=Math.min(devicePixelRatio||1,2),w=Math.round(c.clientWidth*scale),h=Math.round(c.clientHeight*scale);
+   if(c.width!==w||c.height!==h){c.width=w;c.height=h}
+   const ctx=c.getContext('2d');ctx.clearRect(0,0,w,h);ctx.strokeStyle='#19251e';ctx.lineWidth=scale;
+   for(const y of [.15,.5,.85]){ctx.beginPath();ctx.moveTo(0,h*y);ctx.lineTo(w,h*y);ctx.stroke()}
+   ctx.strokeStyle=color;ctx.lineWidth=1.8*scale;ctx.beginPath();let pen=false;
+   for(const s of history){if(s[field]==null||!live){pen=false;continue}const sweep=field==='e'?6:12;if(s.t<time-sweep){pen=false;continue}const x=(s.t-(time-sweep))/sweep*w,y=field==='p'?h*.85-s.p*h*.65:field==='e'?h*.64-s.e*h*.49:h*.86-s.c/ceiling*h*.76;if(pen)ctx.lineTo(x,y);else ctx.moveTo(x,y);pen=true}ctx.stroke();
+  }
+ }
+}
+function frame(now){requestAnimationFrame(frame);try{renderFrame(now)}catch(error){traceSeeded=false;const status=$('status');if(status)status.textContent='Display recovering';}}
+
+const stage=document.querySelector('main'),fsButton=$('fullscreen');document.querySelector('header').insertBefore(fsButton,$('status'));fsButton.title='Full screen: Alt+Enter or F11';fsButton.setAttribute('aria-keyshortcuts','Alt+Enter');
+const rotate=document.createElement('button');rotate.id='rotateDisplay';rotate.textContent='Rotate 90'+String.fromCharCode(176);rotate.setAttribute('aria-label','Rotate display 90 degrees');document.body.append(rotate);
+let angle=90;
+function fitPortrait(){const sideways=angle%180!==0,aw=sideways?innerHeight:innerWidth,ah=sideways?innerWidth:innerHeight,w=aw;stage.style.width=w+'px';stage.style.height=ah+'px';stage.style.transform='translate(-50%,-50%) rotate('+angle+'deg)';}
+if(parent.document.getElementById('syncoStudent')?.contentWindow===window){const shortcut=e=>{if(e.altKey&&e.key==='Enter'){e.preventDefault();fsButton.click()}};document.addEventListener('keydown',shortcut);parent.document.addEventListener('keydown',shortcut);}
+rotate.onclick=()=>{angle=(angle+90)%360;fitPortrait();parent.postMessage({type:'synco-rotate',angle},'*')};window.addEventListener('resize',fitPortrait);fitPortrait();
+requestAnimationFrame(frame);
+</script><script>document.addEventListener('pointerdown',event=>{if(window.frameElement&&parent.vitalAutoFullscreen&&!parent.document.fullscreenElement&&!event?.target?.closest?.('#fullscreen,#rotateDisplay,#monitorSound'))parent.document.documentElement.requestFullscreen({navigationUI:'hide'}).catch(()=>{})});</script><script>if(new URLSearchParams(location.search).get('tile')==='1')document.body.classList.add('tile');</script></body></html>
+
